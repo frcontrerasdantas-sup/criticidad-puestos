@@ -1,1247 +1,776 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evaluador de Puestos Críticos | Hay Group / Korn Ferry</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            navy: { 800: '#1e3a5f', 900: '#0f233c', 950: '#091526' }
-          }
-        }
-      }
-    };
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluador de Criticidad de Puestos | Metodología Hay Group / Korn Ferry</title>
   <style>
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --primary: #0f2942;
+      --primary-light: #1e4b7a;
+      --accent: #0077b6;
+      --border: #dce3ec;
+      --text: #1e293b;
+      --muted: #64748b;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #059669;
+      --info: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(15, 41, 66, 0.15);
+    }
+    header h1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+    header p { margin: 2px 0 0; font-size: 0.85rem; opacity: 0.88; }
+    .user-badge {
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.28);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .container {
+      max-width: 1180px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.08rem;
+      color: var(--primary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .login-box { max-width: 440px; margin: 48px auto; }
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--primary);
+    }
+    input[type="text"], input[type="password"], input[type="url"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      background: #fff;
+      color: var(--text);
+    }
+    input[readonly] {
+      background: #f1f5f9;
+      color: #475569;
+      cursor: not-allowed;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 920px) { .main-grid { grid-template-columns: 1fr; } }
+    .factor-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+      background: #fafbfd;
+    }
+    .factor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .factor-title { font-weight: 700; font-size: 0.94rem; color: var(--primary); }
+    .factor-weight {
+      font-size: 0.78rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .scale-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .scale-btn {
+      padding: 8px 4px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text);
+    }
+    .scale-btn:hover { border-color: var(--accent); }
+    .scale-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .rubric-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.92; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
+    .btn-danger-sm {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
       cursor: pointer;
     }
-    input[type="range"]::-webkit-slider-runnable-track {
-      height: 8px;
-      border-radius: 999px;
-      background: #e2e8f0;
+    .result-pill {
+      padding: 14px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 14px;
+      border: 1px solid transparent;
     }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      margin-top: -6px;
-      background-color: #0f233c;
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      border: 3px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(15, 35, 60, 0.35);
-      transition: transform 0.15s ease, background-color 0.15s ease;
+    .cat-critico { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .cat-estrategico { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .cat-vulnerable { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+    .cat-operativo { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+    .kpi-mini {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
     }
-    input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.12);
-      background-color: #2563eb;
+    .kpi-mini div {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
     }
-    input[type="range"]::-moz-range-track {
-      height: 8px;
-      border-radius: 999px;
-      background: #e2e8f0;
+    .kpi-mini span { display: block; font-size: 0.76rem; color: var(--muted); }
+    .kpi-mini strong { font-size: 1.2rem; color: var(--primary); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
     }
-    input[type="range"]::-moz-range-thumb {
-      background-color: #0f233c;
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      border: 3px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(15, 35, 60, 0.35);
-      transition: transform 0.15s ease, background-color 0.15s ease;
+    th { background: #f8fafc; color: var(--primary); font-weight: 700; }
+    .alert {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      margin-bottom: 14px;
+      display: none;
     }
-    .pulse-ring {
-      animation: pulseRing 2.2s infinite;
-    }
-    @keyframes pulseRing {
-      0% { r: 8; opacity: 0.7; }
-      70% { r: 18; opacity: 0; }
-      100% { r: 18; opacity: 0; }
-    }
+    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .hidden { display: none !important; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-100 selection:text-navy-900">
+<body>
 
-  <!-- Notificación Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-sm">
-    <div id="toastBox" class="bg-navy-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium border border-slate-700">
-      <svg id="toastIcon" class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-      </svg>
-      <span id="toastMessage">Acción realizada correctamente</span>
+<header>
+  <div>
+    <h1>Evaluador de Puestos Críticos</h1>
+    <p>Metodología Hay Group / Korn Ferry &bull; Matriz de Valor e Impacto vs. Riesgo y Escasez</p>
+  </div>
+  <div id="headerUserBox" class="user-badge hidden">
+    <div>
+      <strong id="hdrNombreJefe">-</strong><br>
+      <span id="hdrPuestoArea" style="opacity:0.85;font-size:0.78rem;">-</span>
+    </div>
+    <button class="btn-danger-sm" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- VISTA LOGIN -->
+<div id="loginView" class="container">
+  <div class="card login-box">
+    <h2>Acceso para Jefes Evaluadores</h2>
+    <div id="loginAlert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label for="apiUrlInput">URL del Web App (Google Apps Script /exec)</label>
+      <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" />
+    </div>
+    <div class="form-group">
+      <label for="loginUser">Usuario</label>
+      <input type="text" id="loginUser" placeholder="Ej. jefe.finanzas" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button id="btnLogin" class="btn btn-primary" style="width:100%;" onclick="handleLogin()">Ingresar al Evaluador</button>
+  </div>
+</div>
+
+<!-- VISTA EVALUADOR -->
+<div id="appView" class="container hidden">
+  <div id="appAlert" class="alert"></div>
+
+  <div class="card">
+    <h2>1. Datos del Evaluador y Persona a Evaluar</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Jefe Evaluador (cargado desde Usuarios)</label>
+        <input type="text" id="evalNombreJefe" readonly />
+      </div>
+      <div class="form-group">
+        <label>Cargo del Jefe Evaluador</label>
+        <input type="text" id="evalPuestoJefe" readonly />
+      </div>
+      <div class="form-group">
+        <label>Área Asignada</label>
+        <input type="text" id="evalArea" readonly />
+      </div>
+      <div class="form-group">
+        <label for="selectPersona">Persona a Evaluar *</label>
+        <select id="selectPersona" onchange="onSelectPersona()">
+          <option value="">Cargando personas asignadas...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="evalPuestoPersona">Puesto / Cargo de la Persona Evaluada *</label>
+        <input type="text" id="evalPuestoPersona" placeholder="Se autocompleta al elegir persona" />
+      </div>
+      <div class="form-group">
+        <label>ID Persona</label>
+        <input type="text" id="evalIdPersona" readonly placeholder="Automático" />
+      </div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- PANTALLA DE LOGIN                                                     -->
-  <!-- ===================================================================== -->
-  <div id="loginView" class="min-h-screen flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
-    <div class="max-w-lg w-full mx-auto bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden">
-      <div class="bg-navy-950 text-white px-6 py-6 border-b border-slate-800">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold uppercase tracking-wide mb-2">
-          <span>Hay Group / Korn Ferry</span>
-          <span>•</span>
-          <span>Evaluador de Puestos</span>
+  <div class="main-grid">
+    <!-- FORMULARIO DE FACTORES -->
+    <div>
+      <div class="card">
+        <h2>2. Evaluación por Factores (Escala 1 al 5)</h2>
+
+        <h3 style="font-size:0.95rem;color:#0369a1;margin:0 0 10px;">Eje A: Valor e Impacto Estratégico</h3>
+        <div id="factoresEjeA"></div>
+
+        <h3 style="font-size:0.95rem;color:#b45309;margin:18px 0 10px;">Eje B: Riesgo y Escasez de Talento</h3>
+        <div id="factoresEjeB"></div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
+          <button id="btnGuardar" class="btn btn-accent" onclick="guardarEvaluacion()">Guardar Evaluación en Google Sheets</button>
+          <button class="btn btn-outline" onclick="descargarCSVLocal()">Descargar Respaldo CSV</button>
         </div>
-        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">Acceso al Evaluador de Criticidad</h1>
-        <p class="text-xs sm:text-sm text-slate-300 mt-1">Inicia sesión con tu usuario asignado para evaluar los puestos de tu área.</p>
       </div>
+    </div>
 
-      <div class="p-6 sm:p-7 space-y-5">
-        <!-- Configuración visible de Web App URL -->
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
-            <label for="loginGasUrl" class="text-xs font-bold uppercase tracking-wider text-slate-600">
-              URL Google Apps Script (Web App)
-            </label>
-            <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-              localStorage
-            </span>
+    <!-- MATRIZ Y RESULTADO EN VIVO -->
+    <div>
+      <div class="card">
+        <h2>3. Resultado y Matriz 2&times;2</h2>
+        <div id="resultadoCategoria" class="result-pill cat-operativo">
+          Puesto Operativo Estándar
+        </div>
+        <div class="kpi-mini">
+          <div>
+            <span>Eje A: Valor / Impacto</span>
+            <strong id="valEjeA">3.00</strong>
           </div>
-          <input type="url" id="loginGasUrl" placeholder="https://script.google.com/macros/s/.../exec"
-            onchange="saveGasUrl(this.value)"
-            class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
-          <p class="text-[11px] text-slate-500">Se guarda automáticamente en tu navegador para facilitar pruebas y despliegue en GitHub Pages.</p>
+          <div>
+            <span>Eje B: Riesgo / Escasez</span>
+            <strong id="valEjeB">3.00</strong>
+          </div>
         </div>
 
-        <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
-          <div>
-            <label for="loginUser" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-              Usuario
-            </label>
-            <input type="text" id="loginUser" required autocomplete="username" placeholder="Ej. jefe.packing"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
+        <svg id="matrizSvg" viewBox="0 0 340 310" style="width:100%;max-width:360px;display:block;margin:0 auto;">
+          <!-- Cuadrantes (Corte 3.5) -->
+          <!-- Superior Izquierdo: Eje A >= 3.5, Eje B < 3.5 (Estratégico) -->
+          <rect x="50" y="20" width="162.5" height="97.5" fill="#fef3c7" stroke="#cbd5e1" />
+          <!-- Superior Derecho: Eje A >= 3.5, Eje B >= 3.5 (Crítico) -->
+          <rect x="212.5" y="20" width="97.5" height="97.5" fill="#fee2e2" stroke="#cbd5e1" />
+          <!-- Inferior Izquierdo: Eje A < 3.5, Eje B < 3.5 (Operativo) -->
+          <rect x="50" y="117.5" width="162.5" height="162.5" fill="#dcfce7" stroke="#cbd5e1" />
+          <!-- Inferior Derecho: Eje A < 3.5, Eje B >= 3.5 (Vulnerable) -->
+          <rect x="212.5" y="117.5" width="97.5" height="162.5" fill="#dbeafe" stroke="#cbd5e1" />
 
-          <div>
-            <label for="loginPassword" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-              Contraseña
-            </label>
-            <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
+          <!-- Etiquetas cuadrantes -->
+          <text x="131" y="42" font-size="10" font-weight="bold" fill="#92400e" text-anchor="middle">PUESTO ESTRATÉGICO</text>
+          <text x="261" y="42" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">PUESTO CRÍTICO</text>
+          <text x="131" y="268" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">OPERATIVO ESTÁNDAR</text>
+          <text x="261" y="268" font-size="10" font-weight="bold" fill="#1e40af" text-anchor="middle">VULNERABLE</text>
 
-          <div id="loginErrorBox" class="hidden bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm rounded-xl p-3 font-medium"></div>
+          <!-- Líneas de corte 3.5 -->
+          <line x1="212.5" y1="20" x2="212.5" y2="280" stroke="#64748b" stroke-dasharray="4" />
+          <line x1="50" y1="117.5" x2="310" y2="117.5" stroke="#64748b" stroke-dasharray="4" />
 
-          <button type="submit" id="loginBtn"
-            class="w-full py-3 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
-            <span id="loginBtnText">Iniciar Sesión</span>
-          </button>
-        </form>
+          <!-- Ejes -->
+          <text x="180" y="300" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">Eje B: Riesgo y Escasez (1.0 &rarr; 5.0)</text>
+          <text x="16" y="150" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle" transform="rotate(-90, 16, 150)">Eje A: Valor e Impacto (1.0 &rarr; 5.0)</text>
+
+          <!-- Punto dinámico -->
+          <circle id="puntoMatriz" cx="180" cy="150" r="8" fill="#0f2942" stroke="#ffffff" stroke-width="2.5" />
+        </svg>
       </div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- APLICACIÓN PRINCIPAL (EVALUADOR)                                      -->
-  <!-- ===================================================================== -->
-  <div id="appView" class="hidden min-h-screen flex flex-col">
-    <!-- Encabezado -->
-    <header class="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white border-b border-slate-800 shadow-md">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold tracking-wide uppercase mb-2">
-              <span>Metodología Hay Group / Korn Ferry</span>
-              <span>•</span>
-              <span id="sessionUserBadge">Usuario: -</span>
-              <span>•</span>
-              <span id="sessionAreaBadge">Área: -</span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Evaluador de Criticidad de Puestos
-            </h1>
-            <p class="mt-1 text-xs sm:text-sm text-slate-300 max-w-3xl">
-              Evalúa las 5 variables del modelo (1 al 5), visualiza el posicionamiento en la matriz 2×2 y guarda los registros en Google Sheets o expórtalos a CSV.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button type="button" onclick="resetForm()" class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium border border-white/15 transition">
-              Reiniciar Escalas
-            </button>
-            <button type="button" onclick="logout()" class="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-100 text-xs sm:text-sm font-semibold border border-rose-400/30 transition">
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-
-        <!-- Barra de configuración rápida de URL de Apps Script -->
-        <div class="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-2.5">
-          <label for="appGasUrl" class="text-xs font-bold uppercase tracking-wider text-blue-200 shrink-0">
-            URL Apps Script:
-          </label>
-          <input type="url" id="appGasUrl" placeholder="https://script.google.com/macros/s/.../exec"
-            onchange="saveGasUrl(this.value)"
-            class="flex-1 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
-        </div>
-      </div>
-    </header>
-
-    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 flex-1">
-
-      <!-- Datos del Evaluador, Área y Puesto -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Área Asignada o Seleccionable -->
-          <div>
-            <label for="roleAreaSelect" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Área Organizacional <span id="areaLockHint" class="text-blue-600 font-semibold"></span>
-            </label>
-            <select id="roleAreaSelect" onchange="updateLiveTitle()"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-slate-100 disabled:text-slate-700">
-              <!-- Opciones cargadas dinámicamente con las 8 áreas oficiales -->
-            </select>
-          </div>
-
-          <!-- Nombre del Evaluador -->
-          <div>
-            <label for="evaluatorName" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Nombre del Evaluador <span class="text-rose-600">*</span>
-            </label>
-            <input type="text" id="evaluatorName" required placeholder="Ej. Carlos Mendoza"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-
-          <!-- Nombre del Puesto -->
-          <div>
-            <label for="roleName" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Nombre del Puesto <span class="text-rose-600">*</span>
-            </label>
-            <input type="text" id="roleName" required placeholder="Ej. Jefe de Packing / Especialista Logístico" oninput="updateLiveTitle()"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-        </div>
-      </section>
-
-      <!-- Grid Principal: Evaluación (Izquierda) + Resultados y Matriz 2x2 (Derecha) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-
-        <!-- Panel de Evaluación (1 al 5) -->
-        <div class="lg:col-span-7 space-y-6">
-
-          <!-- EJE A -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-            <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
-              <div>
-                <h2 class="text-base sm:text-lg font-bold flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                  Eje A: Valor e Impacto del Puesto
-                </h2>
-                <p class="text-xs text-slate-300 mt-0.5">Fórmula: (Impacto × 0.60) + (Complejidad × 0.40) • Corte: 3.50</p>
-              </div>
-              <div class="text-right shrink-0 ml-3">
-                <span class="text-xs text-slate-400 block">Puntaje Eje A</span>
-                <span id="badgeEjeA" class="text-xl font-extrabold text-blue-300">3.00</span>
-              </div>
-            </div>
-
-            <div class="p-5 sm:p-6 space-y-6">
-              <!-- Variable A1 -->
-              <div class="space-y-3 pb-6 border-b border-slate-100">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <label for="varImpacto" class="text-sm sm:text-base font-bold text-slate-800">
-                      1. Impacto Estratégico / Operativo
-                    </label>
-                    <span class="ml-2 inline-block px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200">
-                      Peso: 60%
-                    </span>
-                  </div>
-                  <span id="valImpactoBadge" class="px-3 py-1 rounded-lg text-xs font-bold bg-navy-900 text-white">
-                    Nivel 3 - Relevante
-                  </span>
-                </div>
-                <input type="range" id="varImpacto" min="1" max="5" step="1" value="3" oninput="handleScoreChange()" class="w-full">
-                <div class="grid grid-cols-5 gap-1.5 pt-1" id="btnsImpacto"></div>
-                <div class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 text-xs sm:text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Criterio: </span>
-                  <span id="descImpacto"></span>
-                </div>
-              </div>
-
-              <!-- Variable A2 -->
-              <div class="space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <label for="varComplejidad" class="text-sm sm:text-base font-bold text-slate-800">
-                      2. Complejidad y Autonomía
-                    </label>
-                    <span class="ml-2 inline-block px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200">
-                      Peso: 40%
-                    </span>
-                  </div>
-                  <span id="valComplejidadBadge" class="px-3 py-1 rounded-lg text-xs font-bold bg-navy-900 text-white">
-                    Nivel 3 - Relevante
-                  </span>
-                </div>
-                <input type="range" id="varComplejidad" min="1" max="5" step="1" value="3" oninput="handleScoreChange()" class="w-full">
-                <div class="grid grid-cols-5 gap-1.5 pt-1" id="btnsComplejidad"></div>
-                <div class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 text-xs sm:text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Criterio: </span>
-                  <span id="descComplejidad"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- EJE B -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-            <div class="bg-navy-800 text-white px-5 py-4 flex items-center justify-between">
-              <div>
-                <h2 class="text-base sm:text-lg font-bold flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                  Eje B: Riesgo y Escasez de Talento
-                </h2>
-                <p class="text-xs text-slate-300 mt-0.5">Fórmula: (Escasez × 0.40) + (Tiempo × 0.30) + (Fuga × 0.30) • Corte: 3.50</p>
-              </div>
-              <div class="text-right shrink-0 ml-3">
-                <span class="text-xs text-slate-300 block">Puntaje Eje B</span>
-                <span id="badgeEjeB" class="text-xl font-extrabold text-amber-300">3.00</span>
-              </div>
-            </div>
-
-            <div class="p-5 sm:p-6 space-y-6">
-              <!-- Variable B1 -->
-              <div class="space-y-3 pb-6 border-b border-slate-100">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <label for="varEscasez" class="text-sm sm:text-base font-bold text-slate-800">
-                      3. Escasez en el Mercado
-                    </label>
-                    <span class="ml-2 inline-block px-2 py-0.5 text-xs font-semibold rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                      Peso: 40%
-                    </span>
-                  </div>
-                  <span id="valEscasezBadge" class="px-3 py-1 rounded-lg text-xs font-bold bg-navy-900 text-white">
-                    Nivel 3 - Relevante
-                  </span>
-                </div>
-                <input type="range" id="varEscasez" min="1" max="5" step="1" value="3" oninput="handleScoreChange()" class="w-full">
-                <div class="grid grid-cols-5 gap-1.5 pt-1" id="btnsEscasez"></div>
-                <div class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 text-xs sm:text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Criterio: </span>
-                  <span id="descEscasez"></span>
-                </div>
-              </div>
-
-              <!-- Variable B2 -->
-              <div class="space-y-3 pb-6 border-b border-slate-100">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <label for="varTiempo" class="text-sm sm:text-base font-bold text-slate-800">
-                      4. Tiempo de Reemplazo y Curva
-                    </label>
-                    <span class="ml-2 inline-block px-2 py-0.5 text-xs font-semibold rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                      Peso: 30%
-                    </span>
-                  </div>
-                  <span id="valTiempoBadge" class="px-3 py-1 rounded-lg text-xs font-bold bg-navy-900 text-white">
-                    Nivel 3 - Relevante
-                  </span>
-                </div>
-                <input type="range" id="varTiempo" min="1" max="5" step="1" value="3" oninput="handleScoreChange()" class="w-full">
-                <div class="grid grid-cols-5 gap-1.5 pt-1" id="btnsTiempo"></div>
-                <div class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 text-xs sm:text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Criterio: </span>
-                  <span id="descTiempo"></span>
-                </div>
-              </div>
-
-              <!-- Variable B3 -->
-              <div class="space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <label for="varFuga" class="text-sm sm:text-base font-bold text-slate-800">
-                      5. Riesgo de Fuga y Sucesión
-                    </label>
-                    <span class="ml-2 inline-block px-2 py-0.5 text-xs font-semibold rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                      Peso: 30%
-                    </span>
-                  </div>
-                  <span id="valFugaBadge" class="px-3 py-1 rounded-lg text-xs font-bold bg-navy-900 text-white">
-                    Nivel 3 - Relevante
-                  </span>
-                </div>
-                <input type="range" id="varFuga" min="1" max="5" step="1" value="3" oninput="handleScoreChange()" class="w-full">
-                <div class="grid grid-cols-5 gap-1.5 pt-1" id="btnsFuga"></div>
-                <div class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 text-xs sm:text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Criterio: </span>
-                  <span id="descFuga"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Columna Derecha: Puntajes, Matriz 2x2 SVG y Diagnóstico -->
-        <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-6">
-
-          <!-- Puntajes y Matriz 2x2 -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <div>
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Vista Previa</span>
-                <h3 id="liveRoleTitle" class="text-base font-bold text-slate-900 truncate max-w-[260px] sm:max-w-xs">
-                  Puesto sin título
-                </h3>
-              </div>
-              <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                Corte: 3.50
-              </span>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3 text-center">
-              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Eje A (Valor)</span>
-                <span id="scoreEjeADisplay" class="text-2xl font-extrabold text-navy-900 mt-0.5 block">3.00</span>
-                <span id="levelEjeATag" class="text-[11px] font-semibold text-slate-500">Moderado / Bajo</span>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Eje B (Riesgo)</span>
-                <span id="scoreEjeBDisplay" class="text-2xl font-extrabold text-navy-900 mt-0.5 block">3.00</span>
-                <span id="levelEjeBTag" class="text-[11px] font-semibold text-slate-500">Riesgo Controlado</span>
-              </div>
-              <div class="bg-navy-900 text-white rounded-xl p-3 shadow-sm">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-200 block">Índice Global</span>
-                <span id="scoreGlobalDisplay" class="text-2xl font-extrabold text-white mt-0.5 block">3.00</span>
-                <span class="text-[11px] text-blue-200">Escala 1.0 - 5.0</span>
-              </div>
-            </div>
-
-            <!-- SVG Matriz 2x2 -->
-            <div class="mt-5">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Matriz 2×2 en Tiempo Real</span>
-                <span class="text-[11px] text-slate-400">X: Riesgo | Y: Valor</span>
-              </div>
-              <div class="w-full bg-slate-50 rounded-xl border border-slate-200 p-2 sm:p-3">
-                <svg id="matrixSvg" viewBox="0 0 420 360" class="w-full h-auto select-none" role="img" aria-label="Matriz 2x2 de Criticidad">
-                  <defs>
-                    <filter id="dotShadow" x="-30%" y="-30%" width="160%" height="160%">
-                      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.35"/>
-                    </filter>
-                  </defs>
-                  <!-- Corte 3.5 en (1..5): prop = (3.5-1)/4 = 0.625 -> X = 60 + 0.625*330 = 266.25; Y = 20 + (1-0.625)*280 = 125 -->
-                  <rect id="quadClave" x="60" y="20" width="206.25" height="105" fill="#eff6ff" stroke="#cbd5e1" stroke-width="1"/>
-                  <rect id="quadEstrategico" x="266.25" y="20" width="123.75" height="105" fill="#fff1f2" stroke="#cbd5e1" stroke-width="1"/>
-                  <rect id="quadEstandar" x="60" y="125" width="206.25" height="175" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-                  <rect id="quadOperativo" x="266.25" y="125" width="123.75" height="175" fill="#fffbeb" stroke="#cbd5e1" stroke-width="1"/>
-
-                  <line x1="266.25" y1="20" x2="266.25" y2="300" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4"/>
-                  <line x1="60" y1="125" x2="390" y2="125" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4"/>
-
-                  <text x="70" y="40" font-size="10.5" font-weight="700" fill="#1d4ed8">3. PUESTO CLAVE</text>
-                  <text x="70" y="53" font-size="9.5" fill="#3b82f6">Alto valor / Oferta disponible</text>
-
-                  <text x="274" y="40" font-size="10.5" font-weight="800" fill="#be123c">1. CRÍTICO ESTRATÉGICO</text>
-                  <text x="274" y="53" font-size="9.5" fill="#e11d48">Prioridad máxima</text>
-
-                  <text x="70" y="276" font-size="10.5" font-weight="700" fill="#475569">4. ESTÁNDAR / SOPORTE</text>
-                  <text x="70" y="289" font-size="9.5" fill="#64748b">Gestión regular RR.HH.</text>
-
-                  <text x="274" y="276" font-size="10.5" font-weight="700" fill="#b45309">2. CRÍTICO OPERATIVO</text>
-                  <text x="274" y="289" font-size="9.5" fill="#d97706">Cuello de botella técnico</text>
-
-                  <line x1="60" y1="20" x2="60" y2="300" stroke="#334155" stroke-width="1.5"/>
-                  <line x1="60" y1="300" x2="390" y2="300" stroke="#334155" stroke-width="1.5"/>
-
-                  <text x="52" y="303" text-anchor="end" font-size="10" fill="#64748b">1.0</text>
-                  <text x="52" y="233" text-anchor="end" font-size="10" fill="#64748b">2.0</text>
-                  <text x="52" y="163" text-anchor="end" font-size="10" fill="#64748b">3.0</text>
-                  <text x="52" y="128" text-anchor="end" font-size="10" font-weight="700" fill="#0f233c">3.5</text>
-                  <text x="52" y="93" text-anchor="end" font-size="10" fill="#64748b">4.0</text>
-                  <text x="52" y="25" text-anchor="end" font-size="10" fill="#64748b">5.0</text>
-
-                  <text x="60" y="316" text-anchor="middle" font-size="10" fill="#64748b">1.0</text>
-                  <text x="142.5" y="316" text-anchor="middle" font-size="10" fill="#64748b">2.0</text>
-                  <text x="225" y="316" text-anchor="middle" font-size="10" fill="#64748b">3.0</text>
-                  <text x="266.25" y="316" text-anchor="middle" font-size="10" font-weight="700" fill="#0f233c">3.5</text>
-                  <text x="307.5" y="316" text-anchor="middle" font-size="10" fill="#64748b">4.0</text>
-                  <text x="390" y="316" text-anchor="middle" font-size="10" fill="#64748b">5.0</text>
-
-                  <text x="225" y="344" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Eje B: Riesgo y Escasez de Talento →</text>
-                  <text x="18" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b" transform="rotate(-90 18 160)">Eje A: Valor e Impacto del Puesto →</text>
-
-                  <line id="guideLineX" x1="225" y1="160" x2="225" y2="300" stroke="#0f233c" stroke-width="1" stroke-dasharray="2,2" opacity="0.5"/>
-                  <line id="guideLineY" x1="60" y1="160" x2="225" y2="160" stroke="#0f233c" stroke-width="1" stroke-dasharray="2,2" opacity="0.5"/>
-
-                  <g id="plotPointGroup" transform="translate(225, 160)" style="transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);">
-                    <circle cx="0" cy="0" r="10" fill="#0f233c" class="pulse-ring"/>
-                    <circle id="plotPointCircle" cx="0" cy="0" r="8" fill="#0f233c" stroke="#ffffff" stroke-width="2.5" filter="url(#dotShadow)"/>
-                    <rect x="-34" y="-27" width="68" height="17" rx="5" fill="#0f233c"/>
-                    <text id="plotPointLabel" x="0" y="-15.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#ffffff">(3.0, 3.0)</text>
-                  </g>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <!-- Diagnóstico y Plan de Acción -->
-          <div id="diagnosisCard" class="bg-white rounded-2xl shadow-sm border-2 border-slate-300 p-5 sm:p-6 transition-colors duration-300">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <span id="categoryBadge" class="inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide bg-slate-200 text-slate-800 mb-2">
-                  4. Puesto Estándar / Soporte
-                </span>
-                <h3 id="categoryTitle" class="text-lg sm:text-xl font-extrabold text-slate-900">
-                  Gestión Estándar y Eficiencia Operativa
-                </h3>
-              </div>
-            </div>
-
-            <p id="categoryJustification" class="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
-
-            <div class="mt-4 pt-4 border-t border-slate-100">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                Plan de Acción Recomendado:
-              </h4>
-              <ul id="actionPlanList" class="space-y-2 text-xs sm:text-sm text-slate-700"></ul>
-            </div>
-
-            <div class="mt-5 pt-4 border-t border-slate-100">
-              <button type="button" id="saveServerBtn" onclick="saveEvaluationToServer()"
-                class="w-full py-3 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 active:scale-[0.99] text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
-                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-                </svg>
-                <span id="saveServerBtnText">Guardar en el Sistema (Google Sheets)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Historial de la Sesión + Exportación CSV Local -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-        <div class="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-              Evaluaciones Registradas en Esta Sesión
-              <span id="tableCountBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                0
-              </span>
-            </h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Registro local de respaldo para exportar un CSV en cualquier momento.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="exportLocalCSV()"
-              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-              </svg>
-              Exportar CSV Local
-            </button>
-            <button type="button" onclick="clearSessionList()"
-              class="px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition">
-              Limpiar lista
-            </button>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th class="py-3.5 px-4">ID / Fecha</th>
-                <th class="py-3.5 px-4">Puesto / Área</th>
-                <th class="py-3.5 px-4">Evaluador</th>
-                <th class="py-3.5 px-3 text-center">Eje A</th>
-                <th class="py-3.5 px-3 text-center">Eje B</th>
-                <th class="py-3.5 px-4">Clasificación</th>
-                <th class="py-3.5 px-4 text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody id="sessionTableBody" class="divide-y divide-slate-100 text-sm">
-              <tr>
-                <td colspan="7" class="py-10 px-4 text-center text-slate-400 text-sm">
-                  Aún no has guardado evaluaciones en esta sesión.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+  <!-- HISTORIAL DE LA SESIÓN -->
+  <div class="card">
+    <h2>4. Evaluaciones Registradas en esta Sesión (<span id="countSesion">0</span>)</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Persona Evaluada</th>
+            <th>Puesto</th>
+            <th>Eje A</th>
+            <th>Eje B</th>
+            <th>Categoría</th>
+          </tr>
+        </thead>
+        <tbody id="tablaSesionBody">
+          <tr><td colspan="6" style="text-align:center;color:#64748b;">Aún no has guardado evaluaciones en esta sesión.</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+</div>
 
-  <script>
-    // =========================================================================
-    // CONSTANTES Y CONFIGURACIÓN OFICIAL
-    // =========================================================================
-    const OFFICIAL_AREAS = [
-      "Recursos Humanos y SSOMA",
-      "Finanzas",
-      "Logística",
-      "Tecnología de la Información",
-      "Packing",
-      "GOA Chepén y Piura",
-      "GOA Chincha",
-      "Comercial y Sourcing"
-    ];
-
-    const STORAGE_KEYS = {
-      GAS_URL: "hay_group_gas_web_app_url",
-      SESSION: "hay_group_evaluador_session"
-    };
-
-    const RUBRICS = {
-      impacto: {
-        1: { label: "1 - Bajo", desc: "Soporte administrativo o auxiliar; su ausencia temporal no frena los procesos del área." },
-        2: { label: "2 - Moderado", desc: "Afecta tareas rutinarias u operativas menores; existen respaldos inmediatos en el equipo." },
-        3: { label: "3 - Relevante", desc: "Impacta metas de un área específica; su ausencia genera retrasos operativos manejables." },
-        4: { label: "4 - Alto", desc: "Impacta resultados clave del negocio, satisfacción de clientes críticos o seguridad operacional." },
-        5: { label: "5 - Extremo", desc: "Detiene la operación core, genera riesgos legales/financieros graves o compromete la rentabilidad global." }
-      },
-      complejidad: {
-        1: { label: "1 - Bajo", desc: "Tareas estandarizadas e instrucciones simples bajo supervisión directa." },
-        2: { label: "2 - Moderado", desc: "Procedimientos definidos con margen limitado de decisión ante situaciones conocidas." },
-        3: { label: "3 - Relevante", desc: "Requiere criterio técnico especializado y resolución autónoma de problemas habituales." },
-        4: { label: "4 - Alto", desc: "Alta complejidad analítica; toma decisiones tácticas sin precedentes claros." },
-        5: { label: "5 - Extremo", desc: "Conocimiento único o altamente estratégico; define arquitectura, tecnología o rumbo del negocio." }
-      },
-      escasez: {
-        1: { label: "1 - Bajo", desc: "Abundante oferta de candidatos calificados listos para contratar en el mercado." },
-        2: { label: "2 - Moderado", desc: "Oferta suficiente; procesos de selección estándar cubren la vacante sin dificultad." },
-        3: { label: "3 - Relevante", desc: "Oferta limitada; requiere búsqueda activa (hunting) y evaluación técnica exhaustiva." },
-        4: { label: "4 - Alto", desc: "Muy pocos especialistas disponibles en el sector o región; alta competencia por atraerlos." },
-        5: { label: "5 - Extremo", desc: "Talento hiperespecializado casi inexistente en el mercado local o nacional." }
-      },
-      tiempo: {
-        1: { label: "1 - Bajo", desc: "Menos de 1 mes para reclutar al candidato y alcanzar su desempeño pleno." },
-        2: { label: "2 - Moderado", desc: "De 1 a 2 meses entre selección e inducción básica al puesto." },
-        3: { label: "3 - Relevante", desc: "De 3 a 4 meses para reclutar y lograr autonomía operativa completa." },
-        4: { label: "4 - Alto", desc: "De 5 a 8 meses de búsqueda especializada más una curva de aprendizaje compleja." },
-        5: { label: "5 - Extremo", desc: "Más de 9 meses; requiere formación interna de largo plazo o certificaciones críticas." }
-      },
-      fuga: {
-        1: { label: "1 - Bajo", desc: "Bajo riesgo de salida voluntaria y existen 2 o más sucesores internos listos." },
-        2: { label: "2 - Moderado", desc: "Riesgo bajo de rotación; existe al menos 1 sucesor interno en desarrollo avanzado." },
-        3: { label: "3 - Relevante", desc: "Riesgo medio; el sucesor interno identificado tardaría más de 1 año en estar listo." },
-        4: { label: "4 - Alto", desc: "Alta demanda de la competencia y no existe un sucesor interno identificado." },
-        5: { label: "5 - Extremo", desc: "Riesgo inminente de fuga por headhunting agresivo y sucesión interna completamente nula." }
+<script>
+  const FACTORES = [
+    {
+      id: "impacto", eje: "A", peso: "60% Eje A",
+      titulo: "1. Impacto en Resultados y Continuidad Operativa",
+      rubrica: {
+        1: "Nivel 1: Impacto operativo rutinario; su ausencia se cubre sin afectar metas del área.",
+        2: "Nivel 2: Impacto moderado en tareas diarias; retrasos menores recuperables en el corto plazo.",
+        3: "Nivel 3: Impacto directo en indicadores clave del área o cumplimiento de entregas/costos.",
+        4: "Nivel 4: Impacto alto en resultados financieros, calidad o continuidad de procesos críticos.",
+        5: "Nivel 5: Impacto estratégico crítico; una falla paraliza operaciones clave o afecta directamente al negocio."
       }
-    };
+    },
+    {
+      id: "complejidad", eje: "A", peso: "40% Eje A",
+      titulo: "2. Complejidad Técnica y Toma de Decisiones",
+      rubrica: {
+        1: "Nivel 1: Tareas estandarizadas bajo procedimientos claros y supervisión directa.",
+        2: "Nivel 2: Requiere criterio operativo básico para resolver incidencias habituales.",
+        3: "Nivel 3: Análisis técnico especializado y autonomía para resolver problemas no rutinarios.",
+        4: "Nivel 4: Alta complejidad técnica/gestión; decisiones transversales con impacto multifuncional.",
+        5: "Nivel 5: Máxima complejidad estratégica; decisiones de alto riesgo e incertidumbre sin precedentes."
+      }
+    },
+    {
+      id: "escasez", eje: "B", peso: "40% Eje B",
+      titulo: "3. Escasez de Talento en el Mercado",
+      rubrica: {
+        1: "Nivel 1: Amplia oferta de candidatos disponibles en el mercado local.",
+        2: "Nivel 2: Oferta suficiente; requiere filtros estándar de selección.",
+        3: "Nivel 3: Oferta limitada de perfiles con la experiencia o especialización requerida.",
+        4: "Nivel 4: Perfil escaso; alta competencia por atraer talento con este dominio técnico/sectorial.",
+        5: "Nivel 5: Talento extremadamente escaso o de nicho; muy pocos profesionales disponibles en el país/sector."
+      }
+    },
+    {
+      id: "reemplazo", eje: "B", peso: "35% Eje B",
+      titulo: "4. Tiempo de Reemplazo y Curva de Aprendizaje",
+      rubrica: {
+        1: "Nivel 1: Cobertura inmediata (< 2 semanas) y adaptación rápida al puesto.",
+        2: "Nivel 2: Reemplazo entre 2 y 4 semanas; curva de aprendizaje corta.",
+        3: "Nivel 3: Reemplazo entre 1 y 2 meses; requiere entrenamiento técnico específico.",
+        4: "Nivel 4: Reemplazo entre 2 y 4 meses; curva de dominio compleja y conocimiento interno clave.",
+        5: "Nivel 5: Más de 4 meses para cubrir y alcanzar pleno rendimiento; conocimiento crítico difícil de transferir."
+      }
+    },
+    {
+      id: "fuga", eje: "B", peso: "25% Eje B",
+      titulo: "5. Riesgo de Fuga o Rotación del Ocupante",
+      rubrica: {
+        1: "Nivel 1: Muy baja probabilidad de salida; alta estabilidad en el puesto.",
+        2: "Nivel 2: Riesgo bajo; condiciones competitivas y estabilidad normal.",
+        3: "Nivel 3: Riesgo moderado; perfil atractivo para competidores o con alta carga operativa.",
+        4: "Nivel 4: Riesgo alto; alta demanda externa o factores internos de desgaste/retención.",
+        5: "Nivel 5: Riesgo crítico e inminente de salida; alta exposición a ofertas externas."
+      }
+    }
+  ];
 
-    let currentSession = null;
-    let sessionEvaluations = [];
+  let scores = { impacto: 3, complejidad: 3, escasez: 3, reemplazo: 3, fuga: 3 };
+  let sessionData = null;
+  let personasList = [];
+  let historialSesion = [];
 
-    // =========================================================================
-    // GESTIÓN DE URL DE APPS SCRIPT Y SESIÓN
-    // =========================================================================
-    function getGasUrl() {
-      const fromInput = (document.getElementById("appGasUrl")?.value || document.getElementById("loginGasUrl")?.value || "").trim();
-      const fromStorage = (localStorage.getItem(STORAGE_KEYS.GAS_URL) || "").trim();
-      return fromInput || fromStorage;
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedUrl = localStorage.getItem("HAY_API_URL") || "";
+    document.getElementById("apiUrlInput").value = savedUrl;
+    renderFactores();
+    recalcularMatriz();
+  });
+
+  function showAlert(elId, msg, isError = true) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.className = "alert " + (isError ? "alert-error" : "alert-ok");
+    el.style.display = "block";
+  }
+
+  function hideAlert(elId) {
+    document.getElementById(elId).style.display = "none";
+  }
+
+  async function apiPost(payload) {
+    const url = localStorage.getItem("HAY_API_URL");
+    const res = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+
+  async function handleLogin() {
+    hideAlert("loginAlert");
+    const url = document.getElementById("apiUrlInput").value.trim();
+    const usuario = document.getElementById("loginUser").value.trim();
+    const password = document.getElementById("loginPass").value;
+
+    if (!url || !usuario || !password) {
+      showAlert("loginAlert", "Completa la URL del Web App, el usuario y la contraseña.");
+      return;
     }
 
-    function saveGasUrl(url) {
-      const clean = (url || "").trim();
-      localStorage.setItem(STORAGE_KEYS.GAS_URL, clean);
-      const loginInput = document.getElementById("loginGasUrl");
-      const appInput = document.getElementById("appGasUrl");
-      if (loginInput && loginInput.value !== clean) loginInput.value = clean;
-      if (appInput && appInput.value !== clean) appInput.value = clean;
-    }
+    localStorage.setItem("HAY_API_URL", url);
+    const btn = document.getElementById("btnLogin");
+    btn.disabled = true;
+    btn.textContent = "Validando credenciales...";
 
-    async function postToGas(payload) {
-      const url = getGasUrl();
-      if (!url) {
-        throw new Error("Configura primero la URL de implementación de Google Apps Script.");
-      }
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) {
-        throw new Error(`Error HTTP ${response.status} al contactar Google Apps Script.`);
-      }
-      return await response.json();
-    }
-
-    async function handleLoginSubmit(event) {
-      event.preventDefault();
-      const errorBox = document.getElementById("loginErrorBox");
-      const btn = document.getElementById("loginBtn");
-      const btnText = document.getElementById("loginBtnText");
-
-      errorBox.classList.add("hidden");
-      errorBox.textContent = "";
-
-      const usuario = document.getElementById("loginUser").value.trim();
-      const password = document.getElementById("loginPassword").value;
-
-      btn.disabled = true;
-      btnText.textContent = "Validando credenciales...";
-
-      try {
-        const res = await postToGas({
-          action: "login",
-          usuario: usuario,
-          password: password
-        });
-
-        if (!res.ok) {
-          throw new Error(res.error || "No fue posible iniciar sesión.");
-        }
-
-        if (String(res.rol || "").toLowerCase() !== "evaluador") {
-          throw new Error("Este usuario no tiene rol de 'evaluador'. Usa el Dashboard para roles de consulta/KPI.");
-        }
-
-        const sessionData = {
-          token: res.token,
-          usuario: res.usuario,
-          rol: res.rol,
-          areaAsignada: res.areaAsignada,
-          accesoKpi: Boolean(res.accesoKpi),
-          expiraEn: res.expiraEn
-        };
-
-        sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
-        currentSession = sessionData;
-        enterAppView();
-        showToast(`Bienvenido, ${sessionData.usuario}`);
-      } catch (err) {
-        errorBox.textContent = err.message;
-        errorBox.classList.remove("hidden");
-      } finally {
+    try {
+      const resp = await apiPost({ action: "login", usuario, password });
+      if (!resp.ok) {
+        showAlert("loginAlert", resp.error || "No se pudo iniciar sesión.");
         btn.disabled = false;
-        btnText.textContent = "Iniciar Sesión";
-      }
-    }
-
-    function logout() {
-      sessionStorage.removeItem(STORAGE_KEYS.SESSION);
-      currentSession = null;
-      document.getElementById("loginPassword").value = "";
-      document.getElementById("appView").classList.add("hidden");
-      document.getElementById("loginView").classList.remove("hidden");
-      showToast("Sesión cerrada");
-    }
-
-    function enterAppView() {
-      document.getElementById("loginView").classList.add("hidden");
-      document.getElementById("appView").classList.remove("hidden");
-
-      document.getElementById("sessionUserBadge").textContent = `Usuario: ${currentSession.usuario}`;
-      document.getElementById("sessionAreaBadge").textContent = `Área: ${currentSession.areaAsignada}`;
-
-      configureAreaSelector(currentSession.areaAsignada);
-      updateLiveTitle();
-      handleScoreChange();
-    }
-
-    function configureAreaSelector(areaAsignada) {
-      const select = document.getElementById("roleAreaSelect");
-      const hint = document.getElementById("areaLockHint");
-      select.innerHTML = "";
-
-      OFFICIAL_AREAS.forEach(area => {
-        const opt = document.createElement("option");
-        opt.value = area;
-        opt.textContent = area;
-        select.appendChild(opt);
-      });
-
-      const normalized = String(areaAsignada || "").trim().toUpperCase();
-      if (normalized === "TODAS") {
-        select.disabled = false;
-        hint.textContent = "(Seleccionable: TODAS)";
-      } else {
-        // Buscar coincidencia exacta o agregar área asignada si difiere ligeramente
-        const matched = OFFICIAL_AREAS.find(a => a.toLowerCase() === String(areaAsignada).trim().toLowerCase());
-        if (matched) {
-          select.value = matched;
-        } else {
-          const customOpt = document.createElement("option");
-          customOpt.value = areaAsignada;
-          customOpt.textContent = areaAsignada;
-          select.appendChild(customOpt);
-          select.value = areaAsignada;
-        }
-        select.disabled = true;
-        hint.textContent = "(Bloqueada por usuario)";
-      }
-    }
-
-    // =========================================================================
-    // ESCALAS 1-5, CÁLCULO HAY GROUP / KORN FERRY Y MATRIZ 2x2
-    // =========================================================================
-    function initScaleButtons() {
-      const fields = [
-        { key: "impacto", containerId: "btnsImpacto", inputId: "varImpacto" },
-        { key: "complejidad", containerId: "btnsComplejidad", inputId: "varComplejidad" },
-        { key: "escasez", containerId: "btnsEscasez", inputId: "varEscasez" },
-        { key: "tiempo", containerId: "btnsTiempo", inputId: "varTiempo" },
-        { key: "fuga", containerId: "btnsFuga", inputId: "varFuga" }
-      ];
-
-      fields.forEach(field => {
-        const container = document.getElementById(field.containerId);
-        container.innerHTML = "";
-        for (let i = 1; i <= 5; i++) {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.textContent = i;
-          btn.dataset.val = i;
-          btn.className = "py-1.5 rounded-lg text-xs font-bold border transition focus:outline-none";
-          btn.onclick = () => {
-            document.getElementById(field.inputId).value = i;
-            handleScoreChange();
-          };
-          container.appendChild(btn);
-        }
-      });
-    }
-
-    function computeScores() {
-      const impacto = parseInt(document.getElementById("varImpacto").value, 10);
-      const complejidad = parseInt(document.getElementById("varComplejidad").value, 10);
-      const escasez = parseInt(document.getElementById("varEscasez").value, 10);
-      const tiempo = parseInt(document.getElementById("varTiempo").value, 10);
-      const fuga = parseInt(document.getElementById("varFuga").value, 10);
-
-      const ejeA = Number(((impacto * 0.60) + (complejidad * 0.40)).toFixed(2));
-      const ejeB = Number(((escasez * 0.40) + (tiempo * 0.30) + (fuga * 0.30)).toFixed(2));
-      const globalScore = Number(((ejeA + ejeB) / 2).toFixed(2));
-
-      return { impacto, complejidad, escasez, tiempo, fuga, ejeA, ejeB, globalScore };
-    }
-
-    function getClassification(ejeA, ejeB) {
-      const highA = ejeA >= 3.5;
-      const highB = ejeB >= 3.5;
-
-      if (highA && highB) {
-        return {
-          shortName: "1. Crítico Estratégico",
-          subtitle: "Prioridad Máxima en Retención y Sucesión",
-          borderClass: "border-rose-500",
-          badgeClass: "bg-rose-100 text-rose-800 border border-rose-200",
-          justification: "Alto impacto estructural (Eje A ≥ 3.50) combinado con alto riesgo/escasez de talento (Eje B ≥ 3.50).",
-          actions: [
-            "Establecer plan de sucesión formal con sucesores internos identificados y acelerados.",
-            "Revisar competitividad salarial y diseñar esquemas de retención o bonos de permanencia.",
-            "Documentar procesos críticos y decisiones clave para mitigar pérdida de conocimiento."
-          ]
-        };
-      }
-      if (!highA && highB) {
-        return {
-          shortName: "2. Crítico Operativo / Cuello de Botella",
-          subtitle: "Alta Vulnerabilidad Técnica y Escasez",
-          borderClass: "border-amber-500",
-          badgeClass: "bg-amber-100 text-amber-800 border border-amber-200",
-          justification: "Impacto moderado/operativo (Eje A < 3.50) pero alta escasez de talento o curva de aprendizaje extensa (Eje B ≥ 3.50).",
-          actions: [
-            "Implementar entrenamiento cruzado (cross-training) en el equipo para evitar cuellos de botella.",
-            "Desarrollar semilleros técnicos internos y estandarizar guías/procedimientos operativos.",
-            "Monitorear oferta externa y tiempos de cobertura para anticipar vacantes."
-          ]
-        };
-      }
-      if (highA && !highB) {
-        return {
-          shortName: "3. Puesto Clave de Gestión",
-          subtitle: "Alto Impacto con Oferta Disponible",
-          borderClass: "border-blue-600",
-          badgeClass: "bg-blue-100 text-blue-800 border border-blue-200",
-          justification: "Alto impacto en resultados/estrategia (Eje A ≥ 3.50) con menor riesgo o escasez inmediata (Eje B < 3.50).",
-          actions: [
-            "Vincular metas de desempeño a KPIs críticos del área y del negocio.",
-            "Mantener mapeo de talento externo (talent pool) para reemplazos ágiles.",
-            "Impulsar desarrollo de liderazgo y gestión transversal."
-          ]
-        };
-      }
-      return {
-        shortName: "4. Puesto Estándar / Soporte",
-        subtitle: "Gestión Estándar de Recursos Humanos",
-        borderClass: "border-slate-300",
-        badgeClass: "bg-slate-200 text-slate-800 border border-slate-300",
-        justification: "Impacto acotado (Eje A < 3.50) y riesgo/escasez controlado (Eje B < 3.50).",
-        actions: [
-          "Aplicar políticas estándar de compensación, selección e inducción.",
-          "Mantener descripciones de puesto al día y procesos estandarizados.",
-          "Buscar mejoras de eficiencia operativa o automatización rutinaria."
-        ]
-      };
-    }
-
-    function handleScoreChange() {
-      const s = computeScores();
-
-      updateVariableUI("impacto", s.impacto, "valImpactoBadge", "descImpacto", "btnsImpacto");
-      updateVariableUI("complejidad", s.complejidad, "valComplejidadBadge", "descComplejidad", "btnsComplejidad");
-      updateVariableUI("escasez", s.escasez, "valEscasezBadge", "descEscasez", "btnsEscasez");
-      updateVariableUI("tiempo", s.tiempo, "valTiempoBadge", "descTiempo", "btnsTiempo");
-      updateVariableUI("fuga", s.fuga, "valFugaBadge", "descFuga", "btnsFuga");
-
-      document.getElementById("badgeEjeA").textContent = s.ejeA.toFixed(2);
-      document.getElementById("badgeEjeB").textContent = s.ejeB.toFixed(2);
-      document.getElementById("scoreEjeADisplay").textContent = s.ejeA.toFixed(2);
-      document.getElementById("scoreEjeBDisplay").textContent = s.ejeB.toFixed(2);
-      document.getElementById("scoreGlobalDisplay").textContent = s.globalScore.toFixed(2);
-
-      const highA = s.ejeA >= 3.5;
-      const highB = s.ejeB >= 3.5;
-
-      const tagA = document.getElementById("levelEjeATag");
-      tagA.textContent = highA ? "Nivel Alto (≥ 3.50)" : "Moderado / Bajo";
-      tagA.className = highA ? "text-[11px] font-bold text-blue-700" : "text-[11px] font-semibold text-slate-500";
-
-      const tagB = document.getElementById("levelEjeBTag");
-      tagB.textContent = highB ? "Riesgo Alto (≥ 3.50)" : "Riesgo Controlado";
-      tagB.className = highB ? "text-[11px] font-bold text-amber-700" : "text-[11px] font-semibold text-slate-500";
-
-      updateMatrixPlot(s.ejeA, s.ejeB);
-      updateDiagnosisCard(getClassification(s.ejeA, s.ejeB));
-    }
-
-    function updateVariableUI(key, value, badgeId, descId, btnsContainerId) {
-      const item = RUBRICS[key][value];
-      document.getElementById(badgeId).textContent = `Nivel ${item.label}`;
-      document.getElementById(descId).textContent = item.desc;
-
-      const buttons = document.getElementById(btnsContainerId).querySelectorAll("button");
-      buttons.forEach(btn => {
-        const val = parseInt(btn.dataset.val, 10);
-        btn.className = val === value
-          ? "py-1.5 rounded-lg text-xs font-extrabold border border-navy-900 bg-navy-900 text-white shadow-sm transition"
-          : "py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition";
-      });
-    }
-
-    function updateMatrixPlot(ejeA, ejeB) {
-      const x = 60 + ((ejeB - 1.0) / 4.0) * 330;
-      const y = 300 - ((ejeA - 1.0) / 4.0) * 280;
-
-      const group = document.getElementById("plotPointGroup");
-      group.setAttribute("transform", `translate(${x.toFixed(1)}, ${y.toFixed(1)})`);
-
-      const label = document.getElementById("plotPointLabel");
-      label.textContent = `(${ejeB.toFixed(1)}, ${ejeA.toFixed(1)})`;
-
-      const rect = group.querySelector("rect");
-      if (ejeA > 4.4) {
-        rect.setAttribute("y", "12");
-        label.setAttribute("y", "23.5");
-      } else {
-        rect.setAttribute("y", "-27");
-        label.setAttribute("y", "-15.5");
-      }
-
-      const gx = document.getElementById("guideLineX");
-      gx.setAttribute("x1", x.toFixed(1));
-      gx.setAttribute("y1", y.toFixed(1));
-      gx.setAttribute("x2", x.toFixed(1));
-
-      const gy = document.getElementById("guideLineY");
-      gy.setAttribute("y1", y.toFixed(1));
-      gy.setAttribute("x2", x.toFixed(1));
-      gy.setAttribute("y2", y.toFixed(1));
-
-      const highA = ejeA >= 3.5;
-      const highB = ejeB >= 3.5;
-
-      document.getElementById("quadEstrategico").setAttribute("fill", (highA && highB) ? "#ffe4e6" : "#fff1f2");
-      document.getElementById("quadOperativo").setAttribute("fill", (!highA && highB) ? "#fef3c7" : "#fffbeb");
-      document.getElementById("quadClave").setAttribute("fill", (highA && !highB) ? "#dbeafe" : "#eff6ff");
-      document.getElementById("quadEstandar").setAttribute("fill", (!highA && !highB) ? "#e2e8f0" : "#f8fafc");
-
-      const circle = document.getElementById("plotPointCircle");
-      if (highA && highB) circle.setAttribute("fill", "#be123c");
-      else if (!highA && highB) circle.setAttribute("fill", "#d97706");
-      else if (highA && !highB) circle.setAttribute("fill", "#1d4ed8");
-      else circle.setAttribute("fill", "#0f233c");
-    }
-
-    function updateDiagnosisCard(cat) {
-      document.getElementById("diagnosisCard").className =
-        `bg-white rounded-2xl shadow-sm border-2 ${cat.borderClass} p-5 sm:p-6 transition-colors duration-300`;
-
-      const badge = document.getElementById("categoryBadge");
-      badge.className = `inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide ${cat.badgeClass} mb-2`;
-      badge.textContent = cat.shortName;
-
-      document.getElementById("categoryTitle").textContent = cat.subtitle;
-      document.getElementById("categoryJustification").textContent = cat.justification;
-
-      const list = document.getElementById("actionPlanList");
-      list.innerHTML = cat.actions.map(a => `
-        <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-          </svg>
-          <span>${escapeHtml(a)}</span>
-        </li>
-      `).join("");
-    }
-
-    function updateLiveTitle() {
-      const name = document.getElementById("roleName").value.trim();
-      const area = document.getElementById("roleAreaSelect").value;
-      document.getElementById("liveRoleTitle").textContent = name ? `${name} (${area})` : `Puesto en ${area}`;
-    }
-
-    function resetForm() {
-      document.getElementById("roleName").value = "";
-      document.getElementById("varImpacto").value = 3;
-      document.getElementById("varComplejidad").value = 3;
-      document.getElementById("varEscasez").value = 3;
-      document.getElementById("varTiempo").value = 3;
-      document.getElementById("varFuga").value = 3;
-      updateLiveTitle();
-      handleScoreChange();
-      showToast("Escalas reiniciadas a 3");
-    }
-
-    // =========================================================================
-    // GUARDADO EN GOOGLE SHEETS Y EXPORTACIÓN CSV LOCAL
-    // =========================================================================
-    async function saveEvaluationToServer() {
-      if (!currentSession || !currentSession.token) {
-        showToast("Sesión no válida. Vuelve a iniciar sesión.", true);
+        btn.textContent = "Ingresar al Evaluador";
         return;
       }
 
-      const evaluador = document.getElementById("evaluatorName").value.trim();
-      const puesto = document.getElementById("roleName").value.trim();
-      const areaSeleccionada = document.getElementById("roleAreaSelect").value;
-
-      if (!evaluador) {
-        showToast("Ingresa el nombre del evaluador.", true);
-        document.getElementById("evaluatorName").focus();
-        return;
-      }
-      if (!puesto) {
-        showToast("Ingresa el nombre del puesto a evaluar.", true);
-        document.getElementById("roleName").focus();
+      if (resp.rol !== "evaluador") {
+        showAlert("loginAlert", "Este usuario no tiene rol de evaluador.");
+        btn.disabled = false;
+        btn.textContent = "Ingresar al Evaluador";
         return;
       }
 
-      const scores = computeScores();
-      const cat = getClassification(scores.ejeA, scores.ejeB);
+      sessionData = resp;
+      iniciarInterfazEvaluador();
+    } catch (err) {
+      showAlert("loginAlert", "Error de conexión con Google Apps Script: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Ingresar al Evaluador";
+    }
+  }
 
-      const dataPayload = {
-        area: areaSeleccionada,
-        evaluador: evaluador,
-        puesto: puesto,
-        impacto: scores.impacto,
-        complejidad: scores.complejidad,
-        escasez: scores.escasez,
-        reemplazo: scores.tiempo,
-        fuga: scores.fuga,
-        ejeA: scores.ejeA,
-        ejeB: scores.ejeB,
-        categoria: cat.shortName
-      };
+  async function iniciarInterfazEvaluador() {
+    document.getElementById("loginView").classList.add("hidden");
+    document.getElementById("appView").classList.remove("hidden");
+    document.getElementById("headerUserBox").classList.remove("hidden");
 
-      const btn = document.getElementById("saveServerBtn");
-      const btnText = document.getElementById("saveServerBtnText");
-      btn.disabled = true;
-      btnText.textContent = "Guardando en Google Sheets...";
+    const nombreJefe = sessionData.nombreJefe || sessionData.usuario;
+    const puestoJefe = sessionData.puestoJefe || "Evaluador";
+    const area = sessionData.areaAsignada || "";
 
-      try {
-        const res = await postToGas({
-          action: "guardar_evaluacion",
-          token: currentSession.token,
-          data: dataPayload
-        });
+    document.getElementById("hdrNombreJefe").textContent = nombreJefe;
+    document.getElementById("hdrPuestoArea").textContent = `${puestoJefe} | ${area}`;
 
-        if (!res.ok) {
-          throw new Error(res.error || "No se pudo guardar el registro.");
-        }
+    document.getElementById("evalNombreJefe").value = nombreJefe;
+    document.getElementById("evalPuestoJefe").value = puestoJefe;
+    document.getElementById("evalArea").value = area;
 
-        sessionEvaluations.unshift({
-          id: res.id || String(Date.now()).slice(-6),
-          fechaHora: res.fechaHora || new Date().toLocaleString(),
-          usuario: currentSession.usuario,
-          area: res.area || areaSeleccionada,
-          evaluador: evaluador,
-          puesto: puesto,
+    await cargarPersonas();
+  }
+
+  async function cargarPersonas() {
+    const sel = document.getElementById("selectPersona");
+    sel.innerHTML = `<option value="">Cargando personas asignadas...</option>`;
+    try {
+      const resp = await apiPost({ action: "obtener_personas", token: sessionData.token });
+      if (!resp.ok) {
+        sel.innerHTML = `<option value="">Error al cargar lista</option>`;
+        showAlert("appAlert", resp.error || "No se pudieron obtener las personas.");
+        return;
+      }
+      personasList = resp.personas || [];
+      if (personasList.length === 0) {
+        sel.innerHTML = `<option value="">No tienes personas activas asignadas en 'Personas'</option>`;
+        return;
+      }
+      sel.innerHTML = `<option value="">-- Selecciona una persona --</option>` +
+        personasList.map((p, idx) => `<option value="${idx}">${p.nombreCompleto} (${p.puesto})</option>`).join("");
+    } catch (err) {
+      sel.innerHTML = `<option value="">Error de conexión</option>`;
+      showAlert("appAlert", "Error al cargar personas: " + err.message);
+    }
+  }
+
+  function onSelectPersona() {
+    const idx = document.getElementById("selectPersona").value;
+    if (idx === "") {
+      document.getElementById("evalPuestoPersona").value = "";
+      document.getElementById("evalIdPersona").value = "";
+      return;
+    }
+    const p = personasList[Number(idx)];
+    document.getElementById("evalPuestoPersona").value = p.puesto || "";
+    document.getElementById("evalIdPersona").value = p.idPersona || "";
+  }
+
+  function renderFactores() {
+    const contA = document.getElementById("factoresEjeA");
+    const contB = document.getElementById("factoresEjeB");
+    contA.innerHTML = "";
+    contB.innerHTML = "";
+
+    FACTORES.forEach(f => {
+      const box = document.createElement("div");
+      box.className = "factor-box";
+      box.innerHTML = `
+        <div class="factor-header">
+          <span class="factor-title">${f.titulo}</span>
+          <span class="factor-weight">${f.peso}</span>
+        </div>
+        <div class="scale-buttons" id="btns_${f.id}">
+          ${[1,2,3,4,5].map(n => `
+            <button type="button" class="scale-btn ${scores[f.id] === n ? 'active' : ''}" onclick="setScore('${f.id}', ${n})">${n}</button>
+          `).join("")}
+        </div>
+        <div class="rubric-desc" id="desc_${f.id}">${f.rubrica[scores[f.id]]}</div>
+      `;
+      if (f.eje === "A") contA.appendChild(box);
+      else contB.appendChild(box);
+    });
+  }
+
+  function setScore(factorId, val) {
+    scores[factorId] = val;
+    const factor = FACTORES.find(x => x.id === factorId);
+    document.getElementById(`desc_${factorId}`).textContent = factor.rubrica[val];
+    const btns = document.querySelectorAll(`#btns_${factorId} .scale-btn`);
+    btns.forEach((b, idx) => b.classList.toggle("active", idx + 1 === val));
+    recalcularMatriz();
+  }
+
+  function recalcularMatriz() {
+    const ejeA = Number((scores.impacto * 0.60 + scores.complejidad * 0.40).toFixed(2));
+    const ejeB = Number((scores.escasez * 0.40 + scores.reemplazo * 0.35 + scores.fuga * 0.25).toFixed(2));
+
+    document.getElementById("valEjeA").textContent = ejeA.toFixed(2);
+    document.getElementById("valEjeB").textContent = ejeB.toFixed(2);
+
+    let categoria = "Puesto Operativo Estándar";
+    let clase = "cat-operativo";
+    if (ejeA >= 3.5 && ejeB >= 3.5) {
+      categoria = "Puesto Crítico";
+      clase = "cat-critico";
+    } else if (ejeA >= 3.5 && ejeB < 3.5) {
+      categoria = "Puesto Estratégico";
+      clase = "cat-estrategico";
+    } else if (ejeA < 3.5 && ejeB >= 3.5) {
+      categoria = "Puesto Vulnerable";
+      clase = "cat-vulnerable";
+    }
+
+    const pill = document.getElementById("resultadoCategoria");
+    pill.textContent = categoria;
+    pill.className = "result-pill " + clase;
+
+    // Coordenadas SVG: X (Eje B: 1->50, 5->310), Y (Eje A: 1->280, 5->20)
+    const cx = 50 + ((ejeB - 1) / 4) * 260;
+    const cy = 280 - ((ejeA - 1) / 4) * 260;
+    const punto = document.getElementById("puntoMatriz");
+    punto.setAttribute("cx", cx);
+    punto.setAttribute("cy", cy);
+
+    return { ejeA, ejeB, categoria };
+  }
+
+  async function guardarEvaluacion() {
+    hideAlert("appAlert");
+    const idx = document.getElementById("selectPersona").value;
+    if (idx === "") {
+      showAlert("appAlert", "Selecciona una persona de la lista antes de guardar.");
+      return;
+    }
+
+    const personaObj = personasList[Number(idx)];
+    const puesto = document.getElementById("evalPuestoPersona").value.trim();
+    if (!puesto) {
+      showAlert("appAlert", "Ingresa o verifica el puesto de la persona evaluada.");
+      return;
+    }
+
+    const { ejeA, ejeB, categoria } = recalcularMatriz();
+    const btn = document.getElementById("btnGuardar");
+    btn.disabled = true;
+    btn.textContent = "Guardando en Google Sheets...";
+
+    try {
+      const resp = await apiPost({
+        action: "guardar_evaluacion",
+        token: sessionData.token,
+        data: {
+          idPersona: personaObj.idPersona,
+          personaEvaluada: personaObj.nombreCompleto,
+          puesto,
           impacto: scores.impacto,
           complejidad: scores.complejidad,
           escasez: scores.escasez,
-          reemplazo: scores.tiempo,
+          reemplazo: scores.reemplazo,
           fuga: scores.fuga,
-          ejeA: scores.ejeA.toFixed(2),
-          ejeB: scores.ejeB.toFixed(2),
-          categoria: cat.shortName,
-          badgeClass: cat.badgeClass,
-          estado: "Guardado"
-        });
-
-        renderSessionTable();
-        showToast(`Evaluación guardada (ID: ${res.id || "OK"}) en ${res.area || areaSeleccionada}`);
-      } catch (err) {
-        showToast(err.message, true);
-      } finally {
-        btn.disabled = false;
-        btnText.textContent = "Guardar en el Sistema (Google Sheets)";
-      }
-    }
-
-    function renderSessionTable() {
-      const tbody = document.getElementById("sessionTableBody");
-      document.getElementById("tableCountBadge").textContent = sessionEvaluations.length;
-
-      if (sessionEvaluations.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="py-10 px-4 text-center text-slate-400 text-sm">
-              Aún no has guardado evaluaciones en esta sesión.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = sessionEvaluations.map(item => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="py-3.5 px-4 text-xs text-slate-500">
-            <div class="font-bold text-slate-800">${escapeHtml(item.id)}</div>
-            <div>${escapeHtml(item.fechaHora)}</div>
-          </td>
-          <td class="py-3.5 px-4">
-            <div class="font-bold text-slate-900">${escapeHtml(item.puesto)}</div>
-            <div class="text-xs text-slate-500">${escapeHtml(item.area)}</div>
-          </td>
-          <td class="py-3.5 px-4 text-xs font-medium text-slate-700">${escapeHtml(item.evaluador)}</td>
-          <td class="py-3.5 px-3 text-center font-bold text-slate-800">${item.ejeA}</td>
-          <td class="py-3.5 px-3 text-center font-bold text-slate-800">${item.ejeB}</td>
-          <td class="py-3.5 px-4">
-            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold ${item.badgeClass}">
-              ${escapeHtml(item.categoria)}
-            </span>
-          </td>
-          <td class="py-3.5 px-4 text-center">
-            <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              ${escapeHtml(item.estado)}
-            </span>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    function clearSessionList() {
-      sessionEvaluations = [];
-      renderSessionTable();
-      showToast("Lista local limpiada");
-    }
-
-    function exportLocalCSV() {
-      if (sessionEvaluations.length === 0) {
-        showToast("No hay evaluaciones en la lista para exportar.", true);
-        return;
-      }
-
-      const headers = [
-        "ID", "FechaHora", "Usuario", "Area", "Evaluador", "Puesto",
-        "Impacto", "Complejidad", "Escasez", "Reemplazo", "Fuga",
-        "EjeA", "EjeB", "Categoria"
-      ];
-
-      const csvEscape = val => `"${String(val ?? "").replace(/"/g, '""')}"`;
-      const lines = [
-        headers.map(csvEscape).join(","),
-        ...sessionEvaluations.map(r => [
-          r.id, r.fechaHora, r.usuario, r.area, r.evaluador, r.puesto,
-          r.impacto, r.complejidad, r.escasez, r.reemplazo, r.fuga,
-          r.ejeA, r.ejeB, r.categoria
-        ].map(csvEscape).join(","))
-      ];
-
-      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const areaSlug = (currentSession?.areaAsignada || "Area").replace(/[^a-zA-Z0-9]+/g, "_");
-      const dateStr = new Date().toISOString().slice(0, 10);
-
-      link.href = url;
-      link.download = `Evaluacion_Criticidad_${areaSlug}_${dateStr}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      showToast("CSV local descargado");
-    }
-
-    // =========================================================================
-    // UTILIDADES
-    // =========================================================================
-    function escapeHtml(str) {
-      const div = document.createElement("div");
-      div.textContent = String(str ?? "");
-      return div.innerHTML;
-    }
-
-    let toastTimeout;
-    function showToast(message, isError = false) {
-      const toast = document.getElementById("toast");
-      const box = document.getElementById("toastBox");
-      const icon = document.getElementById("toastIcon");
-      document.getElementById("toastMessage").textContent = message;
-
-      if (isError) {
-        box.className = "bg-rose-950 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium border border-rose-700";
-        icon.className = "w-5 h-5 text-rose-300 shrink-0";
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
-      } else {
-        box.className = "bg-navy-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium border border-slate-700";
-        icon.className = "w-5 h-5 text-emerald-400 shrink-0";
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
-      }
-
-      toast.classList.remove("translate-y-20", "opacity-0");
-      toast.classList.add("translate-y-0", "opacity-100");
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toast.classList.add("translate-y-20", "opacity-0");
-        toast.classList.remove("translate-y-0", "opacity-100");
-      }, 3200);
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      initScaleButtons();
-      const savedUrl = localStorage.getItem(STORAGE_KEYS.GAS_URL) || "";
-      document.getElementById("loginGasUrl").value = savedUrl;
-      document.getElementById("appGasUrl").value = savedUrl;
-
-      const rawSession = sessionStorage.getItem(STORAGE_KEYS.SESSION);
-      if (rawSession) {
-        try {
-          const parsed = JSON.parse(rawSession);
-          if (parsed && parsed.token && (!parsed.expiraEn || Number(parsed.expiraEn) > Date.now())) {
-            currentSession = parsed;
-            enterAppView();
-            return;
-          }
-        } catch (e) {
-          sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+          ejeA,
+          ejeB,
+          categoria
         }
+      });
+
+      if (!resp.ok) {
+        showAlert("appAlert", resp.error || "Error al guardar la evaluación.");
+        return;
       }
 
-      handleScoreChange();
-    });
-  </script>
+      historialSesion.unshift({
+        id: resp.id,
+        fechaHora: resp.fechaHora,
+        area: resp.area,
+        evaluador: resp.evaluador,
+        puestoEvaluador: resp.puestoEvaluador,
+        idPersona: personaObj.idPersona,
+        personaEvaluada: personaObj.nombreCompleto,
+        puesto,
+        ...scores,
+        ejeA,
+        ejeB,
+        categoria
+      });
+
+      renderTablaSesion();
+      showAlert("appAlert", `Evaluación guardada correctamente (ID: ${resp.id}) para ${personaObj.nombreCompleto}.`, false);
+
+      // Limpiar selección para siguiente persona
+      document.getElementById("selectPersona").value = "";
+      document.getElementById("evalPuestoPersona").value = "";
+      document.getElementById("evalIdPersona").value = "";
+    } catch (err) {
+      showAlert("appAlert", "Error de red al guardar: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Guardar Evaluación en Google Sheets";
+    }
+  }
+
+  function renderTablaSesion() {
+    document.getElementById("countSesion").textContent = historialSesion.length;
+    const tbody = document.getElementById("tablaSesionBody");
+    if (historialSesion.length === 0) return;
+
+    tbody.innerHTML = historialSesion.map(r => `
+      <tr>
+        <td><strong>${r.id}</strong></td>
+        <td>${r.personaEvaluada}</td>
+        <td>${r.puesto}</td>
+        <td>${r.ejeA.toFixed(2)}</td>
+        <td>${r.ejeB.toFixed(2)}</td>
+        <td><strong>${r.categoria}</strong></td>
+      </tr>
+    `).join("");
+  }
+
+  function descargarCSVLocal() {
+    if (historialSesion.length === 0) {
+      showAlert("appAlert", "No hay evaluaciones registradas en esta sesión para exportar.");
+      return;
+    }
+    const headers = ["ID","FechaHora","Area","Evaluador","PuestoEvaluador","ID_Persona","PersonaEvaluada","Puesto","Impacto","Complejidad","Escasez","Reemplazo","Fuga","EjeA","EjeB","Categoria"];
+    const rows = historialSesion.map(r => [
+      r.id, r.fechaHora, r.area, r.evaluador, r.puestoEvaluador, r.idPersona,
+      r.personaEvaluada, r.puesto, r.impacto, r.complejidad, r.escasez,
+      r.reemplazo, r.fuga, r.ejeA, r.ejeB, r.categoria
+    ].map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","));
+
+    const csv = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Evaluaciones_${sessionData.areaAsignada.replace(/\s+/g, "_")}.csv`;
+    a.click();
+  }
+
+  function logout() {
+    sessionData = null;
+    historialSesion = [];
+    document.getElementById("appView").classList.add("hidden");
+    document.getElementById("headerUserBox").classList.add("hidden");
+    document.getElementById("loginView").classList.remove("hidden");
+    document.getElementById("loginPass").value = "";
+  }
+</script>
 </body>
 </html>
