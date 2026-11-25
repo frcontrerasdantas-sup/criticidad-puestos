@@ -90,7 +90,7 @@
       background: #fff;
       color: var(--text);
     }
-    input[readonly] {
+    input[readonly], select:disabled {
       background: #f1f5f9;
       color: #475569;
       cursor: not-allowed;
@@ -107,6 +107,36 @@
       align-items: start;
     }
     @media (max-width: 980px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .guide-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 0.85rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .guide-banner.warn {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: #92400e;
+    }
+    .guide-banner.edit-mode {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    .locked-zone {
+      opacity: 0.58;
+      pointer-events: none;
+      user-select: none;
+    }
+
     .factor-box {
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -145,11 +175,16 @@
       transition: all 0.15s;
       color: var(--text);
     }
-    .scale-btn:hover { border-color: var(--accent); }
+    .scale-btn:hover:not(:disabled) { border-color: var(--accent); }
     .scale-btn.active {
       background: var(--primary);
       color: #fff;
       border-color: var(--primary);
+    }
+    .scale-btn:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
     }
     .rubric-desc {
       font-size: 0.82rem;
@@ -172,9 +207,10 @@
       cursor: pointer;
       transition: opacity 0.15s;
     }
-    .btn:hover { opacity: 0.93; }
-    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { opacity: 0.93; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-primary { background: var(--primary); color: #fff; }
+    .btn-warning { background: #b45309; color: #fff; }
     .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
     .btn-danger-sm {
       background: rgba(255,255,255,0.2);
@@ -281,6 +317,20 @@
     .score-box span { color: #64748b; }
     .score-box strong { color: var(--primary); font-size: 0.96rem; margin-left: 4px; }
 
+    .status-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .status-tag.updated {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th, td {
       padding: 9px 10px;
@@ -289,7 +339,7 @@
     }
     th { background: #f8fafc; color: var(--primary); font-weight: 700; }
     .alert {
-      padding: 10px 14px;
+      padding: 11px 14px;
       border-radius: 8px;
       font-size: 0.86rem;
       margin-bottom: 14px;
@@ -342,7 +392,15 @@
   <div id="appAlert" class="alert"></div>
 
   <div class="card">
-    <h2>1. Datos del Evaluador y Persona a Evaluar</h2>
+    <h2>1. Datos del Evaluador y Selección Obligatoria de Persona</h2>
+
+    <div id="flujoBanner" class="guide-banner warn">
+      <span>⚠️</span>
+      <div>
+        <strong>Paso 1 obligatorio:</strong> Selecciona primero a la <strong>Persona a Evaluar</strong> en el desplegable para habilitar los botones de puntuación. Solo se permite <strong>una evaluación por persona</strong>; si ya fue evaluada, podrás editar su registro existente sin duplicarlo.
+      </div>
+    </div>
+
     <div class="grid-3">
       <div class="form-group">
         <label>Jefe Evaluador</label>
@@ -357,26 +415,29 @@
         <input type="text" id="evalArea" readonly />
       </div>
       <div class="form-group">
-        <label for="selectPersona">Persona a Evaluar *</label>
+        <label for="selectPersona">Persona a Evaluar * (Obligatorio primero)</label>
         <select id="selectPersona" onchange="onSelectPersona()">
           <option value="">Cargando personas asignadas...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="evalPuestoPersona">Puesto / Cargo a Evaluar *</label>
-        <input type="text" id="evalPuestoPersona" placeholder="Se autocompleta al elegir persona" />
+        <input type="text" id="evalPuestoPersona" placeholder="Se autocompleta al elegir persona" disabled />
       </div>
       <div class="form-group">
-        <label>ID Persona</label>
-        <input type="text" id="evalIdPersona" readonly placeholder="Automático" />
+        <label>ID Persona / Estado de Evaluación</label>
+        <input type="text" id="evalIdPersona" readonly placeholder="Selecciona una persona" />
       </div>
     </div>
   </div>
 
   <div class="main-grid">
     <!-- FACTORES -->
-    <div class="card">
-      <h2>2. Evaluación por Factores (Escala 1.0 a 5.0)</h2>
+    <div id="factoresCard" class="card locked-zone">
+      <h2>
+        <span>2. Evaluación por Factores (Escala 1.0 a 5.0)</span>
+        <span id="badgeModoEvaluacion" class="status-tag">Bloqueado hasta elegir persona</span>
+      </h2>
 
       <h3 style="font-size:0.94rem;color:#0f2942;margin:0 0 10px;">Eje A: Valor e Impacto del Puesto</h3>
       <div id="factoresEjeA"></div>
@@ -395,11 +456,6 @@
 
         <div class="matrix-frame">
           <svg id="matrizSvg" viewBox="0 0 420 390" style="width:100%;height:auto;display:block;">
-            <!-- Área del gráfico: X de 75 a 395 (ancho 320), Y de 25 a 325 (alto 300) -->
-            <!-- Corte 3.5 en ambos ejes: (3.5 - 1.0) / 4.0 = 0.625 -->
-            <!-- X corte = 75 + 0.625 * 320 = 275 -->
-            <!-- Y corte = 325 - 0.625 * 300 = 137.5 -->
-
             <!-- 3. PUESTO CLAVE (Arriba Izquierda: Y >= 3.5, X < 3.5) -->
             <rect x="75" y="25" width="200" height="112.5" fill="#eef2ff" />
             <!-- 1. CRÍTICO ESTRATÉGICO (Arriba Derecha: Y >= 3.5, X >= 3.5) -->
@@ -433,7 +489,7 @@
             <line id="guiaHorizontal" x1="75" y1="175" x2="235" y2="175" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
             <line id="guiaVertical" x1="235" y1="175" x2="235" y2="325" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
 
-            <!-- Etiquetas numéricas Eje Y (1.0 a 5.0, con 3.5 destacado) -->
+            <!-- Etiquetas numéricas Eje Y -->
             <text x="66" y="30" font-size="11" fill="#64748b" text-anchor="end">5.0</text>
             <text x="66" y="100" font-size="11" fill="#64748b" text-anchor="end">4.0</text>
             <text x="66" y="141" font-size="11.5" font-weight="800" fill="#0f172a" text-anchor="end">3.5</text>
@@ -441,7 +497,7 @@
             <text x="66" y="250" font-size="11" fill="#64748b" text-anchor="end">2.0</text>
             <text x="66" y="325" font-size="11" fill="#64748b" text-anchor="end">1.0</text>
 
-            <!-- Etiquetas numéricas Eje X (1.0 a 5.0, con 3.5 destacado) -->
+            <!-- Etiquetas numéricas Eje X -->
             <text x="75" y="342" font-size="11" fill="#64748b" text-anchor="middle">1.0</text>
             <text x="155" y="342" font-size="11" fill="#64748b" text-anchor="middle">2.0</text>
             <text x="235" y="342" font-size="11" fill="#64748b" text-anchor="middle">3.0</text>
@@ -449,10 +505,8 @@
             <text x="315" y="342" font-size="11" fill="#64748b" text-anchor="middle">4.0</text>
             <text x="395" y="342" font-size="11" fill="#64748b" text-anchor="middle">5.0</text>
 
-            <!-- Título Eje X -->
+            <!-- Títulos de ejes -->
             <text x="235" y="374" font-size="12" font-weight="800" fill="#0f172a" text-anchor="middle">Eje B: Riesgo y Escasez de Talento &rarr;</text>
-
-            <!-- Título Eje Y -->
             <text x="22" y="175" font-size="12" font-weight="800" fill="#0f172a" text-anchor="middle" transform="rotate(-90, 22, 175)">Eje A: Valor e Impacto del Puesto &rarr;</text>
 
             <!-- Punto actual -->
@@ -491,8 +545,11 @@
           </p>
 
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <button id="btnGuardar" class="btn btn-primary" style="width:100%;" onclick="guardarEvaluacion()">
-              + Guardar evaluación en Google Sheets
+            <button id="btnGuardar" class="btn btn-primary" style="width:100%;" disabled onclick="guardarEvaluacion()">
+              Selecciona una persona para habilitar el guardado
+            </button>
+            <button id="btnCancelarSeleccion" class="btn btn-outline hidden" style="width:100%;" onclick="resetearFormularioCompleto()">
+              Cancelar y limpiar selección
             </button>
             <button class="btn btn-outline" style="width:100%;" onclick="descargarCSVLocal()">
               Descargar respaldo CSV de sesión
@@ -505,7 +562,7 @@
 
   <!-- TABLA COMPARATIVA / HISTORIAL DE SESIÓN -->
   <div class="card">
-    <h2>Evaluaciones Registradas en esta Sesión (<span id="countSesion">0</span>)</h2>
+    <h2>Evaluaciones Registradas / Editadas en esta Sesión (<span id="countSesion">0</span>)</h2>
     <div style="overflow-x:auto;">
       <table>
         <thead>
@@ -516,10 +573,11 @@
             <th>Eje A (Valor)</th>
             <th>Eje B (Riesgo)</th>
             <th>Cuadrante / Categoría</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody id="tablaSesionBody">
-          <tr><td colspan="6" style="text-align:center;color:#64748b;">Aún no has guardado evaluaciones en esta sesión.</td></tr>
+          <tr><td colspan="7" style="text-align:center;color:#64748b;">Aún no has guardado evaluaciones en esta sesión.</td></tr>
         </tbody>
       </table>
     </div>
@@ -620,17 +678,41 @@
     }
   };
 
-  let scores = { impacto: 3, complejidad: 3, escasez: 3, reemplazo: 3, fuga: 3 };
+  const DEFAULT_SCORES = { impacto: 3, complejidad: 3, escasez: 3, reemplazo: 3, fuga: 3 };
+  let scores = { ...DEFAULT_SCORES };
   let sessionData = null;
   let personasList = [];
+  let evaluacionesExistentesMap = {}; // clave por idPersona o nombreNormalizado
+  let registroEnEdicion = null; // { id, accion: "actualizar_evaluacion" } o null para "guardar_evaluacion"
   let historialSesion = [];
 
   window.addEventListener("DOMContentLoaded", () => {
     const savedUrl = localStorage.getItem("HAY_API_URL") || "";
     document.getElementById("apiUrlInput").value = savedUrl;
     renderFactores();
+    actualizarEstadoBloqueo(false);
     recalcularMatriz();
   });
+
+  function normalizarClave(str) {
+    return String(str || "").trim().toLowerCase();
+  }
+
+  function buscarEvaluacionPrevia(personaObj) {
+    if (!personaObj) return null;
+    const byId = personaObj.idPersona ? evaluacionesExistentesMap["id:" + normalizarClave(personaObj.idPersona)] : null;
+    if (byId) return byId;
+    return evaluacionesExistentesMap["nom:" + normalizarClave(personaObj.nombreCompleto)] || null;
+  }
+
+  function registrarEvaluacionEnMapa(reg) {
+    if (reg.idPersona) {
+      evaluacionesExistentesMap["id:" + normalizarClave(reg.idPersona)] = reg;
+    }
+    if (reg.personaEvaluada) {
+      evaluacionesExistentesMap["nom:" + normalizarClave(reg.personaEvaluada)] = reg;
+    }
+  }
 
   function showAlert(elId, msg, isError = true) {
     const el = document.getElementById(elId);
@@ -705,42 +787,180 @@
     document.getElementById("evalPuestoJefe").value = puestoJefe;
     document.getElementById("evalArea").value = area;
 
-    await cargarPersonas();
+    await cargarPersonasYEvaluacionesPrevias();
+    resetearFormularioCompleto();
   }
 
-  async function cargarPersonas() {
+  async function cargarPersonasYEvaluacionesPrevias() {
     const sel = document.getElementById("selectPersona");
     sel.innerHTML = `<option value="">Cargando personas asignadas...</option>`;
+    evaluacionesExistentesMap = {};
+
     try {
-      const resp = await apiPost({ action: "obtener_personas", token: sessionData.token });
-      if (!resp.ok) {
+      const respPersonas = await apiPost({ action: "obtener_personas", token: sessionData.token });
+      if (!respPersonas.ok) {
         sel.innerHTML = `<option value="">Error al cargar lista</option>`;
-        showAlert("appAlert", resp.error || "No se pudieron obtener las personas.");
+        showAlert("appAlert", respPersonas.error || "No se pudieron obtener las personas.");
         return;
       }
-      personasList = resp.personas || [];
-      if (personasList.length === 0) {
-        sel.innerHTML = `<option value="">No tienes personas activas asignadas en 'Personas'</option>`;
-        return;
+
+      personasList = respPersonas.personas || [];
+
+      // Si el backend devuelve evaluacionesPrevias o el usuario tiene acceso al dashboard, intentamos cargarlas para evitar duplicados
+      if (Array.isArray(respPersonas.evaluacionesPrevias)) {
+        respPersonas.evaluacionesPrevias.forEach(registrarEvaluacionEnMapa);
+      } else if (sessionData.accesoKpi) {
+        try {
+          const respDash = await apiPost({ action: "obtener_dashboard", token: sessionData.token });
+          if (respDash.ok && Array.isArray(respDash.registros)) {
+            respDash.registros.forEach(registrarEvaluacionEnMapa);
+          }
+        } catch (_) {
+          // Si no aplica, se controlará también con los registros de la sesión y respuesta del servidor
+        }
       }
-      sel.innerHTML = `<option value="">-- Selecciona una persona --</option>` +
-        personasList.map((p, idx) => `<option value="${idx}">${p.nombreCompleto} (${p.puesto})</option>`).join("");
+
+      poblarSelectorPersonas();
     } catch (err) {
       sel.innerHTML = `<option value="">Error de conexión</option>`;
       showAlert("appAlert", "Error al cargar personas: " + err.message);
     }
   }
 
-  function onSelectPersona() {
-    const idx = document.getElementById("selectPersona").value;
-    if (idx === "") {
-      document.getElementById("evalPuestoPersona").value = "";
-      document.getElementById("evalIdPersona").value = "";
+  function poblarSelectorPersonas() {
+    const sel = document.getElementById("selectPersona");
+    if (personasList.length === 0) {
+      sel.innerHTML = `<option value="">No tienes personas activas asignadas en 'Personas'</option>`;
       return;
     }
+
+    sel.innerHTML = `<option value="">-- Selecciona una persona para evaluar --</option>` +
+      personasList.map((p, idx) => {
+        const yaEvaluada = Boolean(buscarEvaluacionPrevia(p));
+        const marca = yaEvaluada ? " [Ya evaluado - Editar]" : "";
+        return `<option value="${idx}">${p.nombreCompleto} (${p.puesto})${marca}</option>`;
+      }).join("");
+  }
+
+  function actualizarEstadoBloqueo(habilitado, esEdicion = false) {
+    const cardFactores = document.getElementById("factoresCard");
+    const puestoInput = document.getElementById("evalPuestoPersona");
+    const btnGuardar = document.getElementById("btnGuardar");
+    const btnCancelar = document.getElementById("btnCancelarSeleccion");
+    const badgeModo = document.getElementById("badgeModoEvaluacion");
+
+    puestoInput.disabled = !habilitado;
+
+    if (!habilitado) {
+      cardFactores.classList.add("locked-zone");
+      badgeModo.textContent = "Bloqueado hasta elegir persona";
+      badgeModo.className = "status-tag";
+      btnGuardar.disabled = true;
+      btnGuardar.className = "btn btn-primary";
+      btnGuardar.textContent = "Selecciona una persona para habilitar el guardado";
+      btnCancelar.classList.add("hidden");
+    } else {
+      cardFactores.classList.remove("locked-zone");
+      btnGuardar.disabled = false;
+      btnCancelar.classList.remove("hidden");
+
+      if (esEdicion) {
+        badgeModo.textContent = "Modo Edición (Registro único)";
+        badgeModo.className = "status-tag updated";
+        btnGuardar.className = "btn btn-warning";
+        btnGuardar.textContent = "Actualizar evaluación existente en Google Sheets";
+      } else {
+        badgeModo.textContent = "Habilitado para evaluar";
+        badgeModo.className = "status-tag";
+        btnGuardar.className = "btn btn-primary";
+        btnGuardar.textContent = "+ Guardar evaluación en Google Sheets";
+      }
+    }
+
+    document.querySelectorAll(".scale-btn").forEach(btn => {
+      btn.disabled = !habilitado;
+    });
+  }
+
+  function onSelectPersona() {
+    hideAlert("appAlert");
+    const idx = document.getElementById("selectPersona").value;
+    const banner = document.getElementById("flujoBanner");
+
+    if (idx === "") {
+      resetearFormularioCompleto(false);
+      return;
+    }
+
     const p = personasList[Number(idx)];
-    document.getElementById("evalPuestoPersona").value = p.puesto || "";
-    document.getElementById("evalIdPersona").value = p.idPersona || "";
+    const previa = buscarEvaluacionPrevia(p);
+
+    document.getElementById("evalPuestoPersona").value = (previa && previa.Puesto) ? previa.Puesto : (p.puesto || "");
+
+    if (previa) {
+      registroEnEdicion = {
+        id: previa.ID || previa.id || "",
+        accion: "actualizar_evaluacion"
+      };
+      scores = {
+        impacto: Number(previa.Impacto ?? previa.impacto) || 3,
+        complejidad: Number(previa.Complejidad ?? previa.complejidad) || 3,
+        escasez: Number(previa.Escasez ?? previa.escasez) || 3,
+        reemplazo: Number(previa.Reemplazo ?? previa.reemplazo) || 3,
+        fuga: Number(previa.Fuga ?? previa.fuga) || 3
+      };
+
+      document.getElementById("evalIdPersona").value = `${p.idPersona || ""} • Ya evaluado (${registroEnEdicion.id || "existente"})`;
+      banner.className = "guide-banner edit-mode";
+      banner.innerHTML = `
+        <span>✏️</span>
+        <div>
+          <strong>Atención — Solo se permite una evaluación por persona:</strong> <strong>${p.nombreCompleto}</strong> ya cuenta con una evaluación registrada${registroEnEdicion.id ? ` (ID: <strong>${registroEnEdicion.id}</strong>)` : ""}. Se han cargado sus puntajes actuales para que puedas <strong>editarlos y actualizar el registro</strong> sin crear duplicados.
+        </div>
+      `;
+      renderFactores();
+      actualizarEstadoBloqueo(true, true);
+      recalcularMatriz();
+    } else {
+      registroEnEdicion = null;
+      scores = { ...DEFAULT_SCORES };
+      document.getElementById("evalIdPersona").value = `${p.idPersona || ""} • Nueva evaluación`;
+      banner.className = "guide-banner";
+      banner.innerHTML = `
+        <span>✅</span>
+        <div>
+          <strong>Persona seleccionada:</strong> Estás evaluando a <strong>${p.nombreCompleto}</strong>. Ajusta cada factor del 1.0 al 5.0 y revisa el diagnóstico en la matriz antes de guardar.
+        </div>
+      `;
+      renderFactores();
+      actualizarEstadoBloqueo(true, false);
+      recalcularMatriz();
+    }
+  }
+
+  function resetearFormularioCompleto(limpiarAlerta = true) {
+    if (limpiarAlerta) hideAlert("appAlert");
+    registroEnEdicion = null;
+    scores = { ...DEFAULT_SCORES };
+
+    const sel = document.getElementById("selectPersona");
+    if (sel.options.length > 0) sel.value = "";
+
+    document.getElementById("evalPuestoPersona").value = "";
+    document.getElementById("evalIdPersona").value = "";
+
+    const banner = document.getElementById("flujoBanner");
+    banner.className = "guide-banner warn";
+    banner.innerHTML = `
+      <span>⚠️</span>
+      <div>
+        <strong>Paso 1 obligatorio:</strong> Selecciona primero a la <strong>Persona a Evaluar</strong> en el desplegable para habilitar los botones de puntuación. Solo se permite <strong>una evaluación por persona</strong>; si ya fue evaluada, podrás editar su registro existente sin duplicarlo.
+      </div>
+    `;
+
+    renderFactores();
+    actualizarEstadoBloqueo(false, false);
+    recalcularMatriz();
   }
 
   function renderFactores() {
@@ -770,11 +990,16 @@
   }
 
   function setScore(factorId, val) {
+    const idx = document.getElementById("selectPersona").value;
+    if (idx === "") {
+      showAlert("appAlert", "Debes seleccionar primero a la Persona a Evaluar antes de asignar puntajes.");
+      return;
+    }
     scores[factorId] = val;
     const factor = FACTORES.find(x => x.id === factorId);
     document.getElementById(`desc_${factorId}`).textContent = factor.rubrica[val];
     const btns = document.querySelectorAll(`#btns_${factorId} .scale-btn`);
-    btns.forEach((b, idx) => b.classList.toggle("active", idx + 1 === val));
+    btns.forEach((b, i) => b.classList.toggle("active", i + 1 === val));
     recalcularMatriz();
   }
 
@@ -791,7 +1016,6 @@
       quad = CUADRANTES.puestoClave;
     }
 
-    // Coordenadas SVG: X = Eje B (1.0 -> 75, 5.0 -> 395), Y = Eje A (1.0 -> 325, 5.0 -> 25)
     const cx = 75 + ((ejeB - 1.0) / 4.0) * 320;
     const cy = 325 - ((ejeA - 1.0) / 4.0) * 300;
 
@@ -811,7 +1035,6 @@
     document.getElementById("badgeCoords").setAttribute("transform", `translate(${pillX}, ${pillY})`);
     document.getElementById("textoCoords").textContent = `(${ejeB.toFixed(1)}, ${ejeA.toFixed(1)})`;
 
-    // Actualizar tarjeta informativa
     const pill = document.getElementById("diagPill");
     pill.textContent = quad.categoria;
     pill.style.background = quad.pillBg;
@@ -835,7 +1058,7 @@
     hideAlert("appAlert");
     const idx = document.getElementById("selectPersona").value;
     if (idx === "") {
-      showAlert("appAlert", "Selecciona una persona de la lista antes de guardar.");
+      showAlert("appAlert", "Advertencia: Selecciona primero a la persona a evaluar antes de guardar.");
       return;
     }
 
@@ -846,16 +1069,20 @@
       return;
     }
 
+    const esEdicion = Boolean(registroEnEdicion);
+    const actionToSend = esEdicion ? "actualizar_evaluacion" : "guardar_evaluacion";
     const { ejeA, ejeB, categoria } = recalcularMatriz();
+
     const btn = document.getElementById("btnGuardar");
     btn.disabled = true;
-    btn.textContent = "Guardando en Google Sheets...";
+    btn.textContent = esEdicion ? "Actualizando evaluación..." : "Guardando evaluación...";
 
     try {
       const resp = await apiPost({
-        action: "guardar_evaluacion",
+        action: actionToSend,
         token: sessionData.token,
         data: {
+          id: esEdicion ? registroEnEdicion.id : undefined,
           idPersona: personaObj.idPersona,
           personaEvaluada: personaObj.nombreCompleto,
           puesto,
@@ -871,36 +1098,65 @@
       });
 
       if (!resp.ok) {
-        showAlert("appAlert", resp.error || "Error al guardar la evaluación.");
+        showAlert("appAlert", resp.error || "No se pudo completar la operación en Google Sheets.");
+        btn.disabled = false;
         return;
       }
 
-      historialSesion.unshift({
-        id: resp.id,
-        fechaHora: resp.fechaHora,
-        area: resp.area,
-        evaluador: resp.evaluador,
-        puestoEvaluador: resp.puestoEvaluador,
+      const idFinal = resp.id || (esEdicion ? registroEnEdicion.id : "");
+      const registroGuardado = {
+        ID: idFinal,
+        id: idFinal,
+        FechaHora: resp.fechaHora || new Date().toISOString().slice(0, 19).replace("T", " "),
+        Area: resp.area || sessionData.areaAsignada,
+        Evaluador: resp.evaluador || sessionData.nombreJefe || sessionData.usuario,
+        PuestoEvaluador: resp.puestoEvaluador || sessionData.puestoJefe || "",
+        ID_Persona: personaObj.idPersona,
         idPersona: personaObj.idPersona,
+        PersonaEvaluada: personaObj.nombreCompleto,
         personaEvaluada: personaObj.nombreCompleto,
+        Puesto: puesto,
         puesto,
-        ...scores,
+        Impacto: scores.impacto,
+        Complejidad: scores.complejidad,
+        Escasez: scores.escasez,
+        Reemplazo: scores.reemplazo,
+        Fuga: scores.fuga,
+        EjeA: ejeA,
         ejeA,
+        EjeB: ejeB,
         ejeB,
-        categoria
-      });
+        Categoria: categoria,
+        categoria,
+        estadoOperacion: esEdicion ? "Actualizado" : "Registrado"
+      };
+
+      registrarEvaluacionEnMapa(registroGuardado);
+      poblarSelectorPersonas();
+
+      const existingIdx = historialSesion.findIndex(item =>
+        (item.id && idFinal && item.id === idFinal) ||
+        (item.idPersona && personaObj.idPersona && normalizarClave(item.idPersona) === normalizarClave(personaObj.idPersona)) ||
+        (normalizarClave(item.personaEvaluada) === normalizarClave(personaObj.nombreCompleto))
+      );
+
+      if (existingIdx >= 0) {
+        historialSesion[existingIdx] = registroGuardado;
+      } else {
+        historialSesion.unshift(registroGuardado);
+      }
 
       renderTablaSesion();
-      showAlert("appAlert", `Evaluación guardada correctamente (ID: ${resp.id}) para ${personaObj.nombreCompleto}.`, false);
 
-      document.getElementById("selectPersona").value = "";
-      document.getElementById("evalPuestoPersona").value = "";
-      document.getElementById("evalIdPersona").value = "";
+      const mensajeExito = esEdicion
+        ? `Evaluación actualizada correctamente (ID: ${idFinal}) para ${personaObj.nombreCompleto}. El formulario se ha reiniciado.`
+        : `Evaluación guardada correctamente (ID: ${idFinal}) para ${personaObj.nombreCompleto}. El formulario se ha reiniciado.`;
+
+      resetearFormularioCompleto(false);
+      showAlert("appAlert", mensajeExito, false);
     } catch (err) {
       showAlert("appAlert", "Error de red al guardar: " + err.message);
-    } finally {
       btn.disabled = false;
-      btn.textContent = "+ Guardar evaluación en Google Sheets";
     }
   }
 
@@ -914,9 +1170,10 @@
         <td><strong>${r.id}</strong></td>
         <td>${r.personaEvaluada}</td>
         <td>${r.puesto}</td>
-        <td>${r.ejeA.toFixed(2)}</td>
-        <td>${r.ejeB.toFixed(2)}</td>
+        <td>${Number(r.ejeA).toFixed(2)}</td>
+        <td>${Number(r.ejeB).toFixed(2)}</td>
         <td><strong>${r.categoria}</strong></td>
+        <td><span class="status-tag ${r.estadoOperacion === "Actualizado" ? "updated" : ""}">${r.estadoOperacion}</span></td>
       </tr>
     `).join("");
   }
@@ -926,11 +1183,11 @@
       showAlert("appAlert", "No hay evaluaciones registradas en esta sesión para exportar.");
       return;
     }
-    const headers = ["ID","FechaHora","Area","Evaluador","PuestoEvaluador","ID_Persona","PersonaEvaluada","Puesto","Impacto","Complejidad","Escasez","Reemplazo","Fuga","EjeA","EjeB","Categoria"];
+    const headers = ["ID","FechaHora","Area","Evaluador","PuestoEvaluador","ID_Persona","PersonaEvaluada","Puesto","Impacto","Complejidad","Escasez","Reemplazo","Fuga","EjeA","EjeB","Categoria","Estado"];
     const rows = historialSesion.map(r => [
-      r.id, r.fechaHora, r.area, r.evaluador, r.puestoEvaluador, r.idPersona,
-      r.personaEvaluada, r.puesto, r.impacto, r.complejidad, r.escasez,
-      r.reemplazo, r.fuga, r.ejeA, r.ejeB, r.categoria
+      r.id, r.FechaHora, r.Area, r.Evaluador, r.PuestoEvaluador, r.idPersona,
+      r.personaEvaluada, r.puesto, r.Impacto, r.Complejidad, r.Escasez,
+      r.Reemplazo, r.Fuga, r.ejeA, r.ejeB, r.categoria, r.estadoOperacion
     ].map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","));
 
     const csv = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
@@ -944,6 +1201,8 @@
   function logout() {
     sessionData = null;
     historialSesion = [];
+    evaluacionesExistentesMap = {};
+    resetearFormularioCompleto();
     document.getElementById("appView").classList.add("hidden");
     document.getElementById("headerUserBox").classList.add("hidden");
     document.getElementById("loginView").classList.remove("hidden");
