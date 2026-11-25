@@ -562,7 +562,7 @@
 
   <!-- TABLA COMPARATIVA / HISTORIAL DE SESIÓN -->
   <div class="card">
-    <h2>Evaluaciones Registradas / Editadas en esta Sesión (<span id="countSesion">0</span>)</h2>
+    <h2>Evaluaciones Registradas / Editadas (<span id="countSesion">0</span>)</h2>
     <div style="overflow-x:auto;">
       <table>
         <thead>
@@ -682,8 +682,8 @@
   let scores = { ...DEFAULT_SCORES };
   let sessionData = null;
   let personasList = [];
-  let evaluacionesExistentesMap = {}; // clave por idPersona o nombreNormalizado
-  let registroEnEdicion = null; // { id, accion: "actualizar_evaluacion" } o null para "guardar_evaluacion"
+  let evaluacionesExistentesMap = {};
+  let registroEnEdicion = null;
   let historialSesion = [];
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -696,6 +696,43 @@
 
   function normalizarClave(str) {
     return String(str || "").trim().toLowerCase();
+  }
+
+  function normalizarRegistroEvaluacion(r, estadoOperacion = "Registrado") {
+    const idVal = String(r.ID || r.id || "").trim();
+    const idPerVal = String(r.ID_Persona || r.idPersona || "").trim();
+    const perVal = String(r.PersonaEvaluada || r.personaEvaluada || "").trim();
+    const puestoVal = String(r.Puesto || r.puesto || "").trim();
+    const ejeAVal = Number(r.EjeA ?? r.ejeA ?? 0);
+    const ejeBVal = Number(r.EjeB ?? r.ejeB ?? 0);
+    const catVal = String(r.Categoria || r.categoria || "").trim();
+
+    return {
+      ID: idVal,
+      id: idVal,
+      FechaHora: r.FechaHora || r.fechaHora || "",
+      Area: r.Area || r.area || (sessionData ? sessionData.areaAsignada : ""),
+      Evaluador: r.Evaluador || r.evaluador || (sessionData ? (sessionData.nombreJefe || sessionData.usuario) : ""),
+      PuestoEvaluador: r.PuestoEvaluador || r.puestoEvaluador || (sessionData ? (sessionData.puestoJefe || "") : ""),
+      ID_Persona: idPerVal,
+      idPersona: idPerVal,
+      PersonaEvaluada: perVal,
+      personaEvaluada: perVal,
+      Puesto: puestoVal,
+      puesto: puestoVal,
+      Impacto: Number(r.Impacto ?? r.impacto ?? 3),
+      Complejidad: Number(r.Complejidad ?? r.complejidad ?? 3),
+      Escasez: Number(r.Escasez ?? r.escasez ?? 3),
+      Reemplazo: Number(r.Reemplazo ?? r.reemplazo ?? 3),
+      Fuga: Number(r.Fuga ?? r.fuga ?? 3),
+      EjeA: ejeAVal,
+      ejeA: ejeAVal,
+      EjeB: ejeBVal,
+      ejeB: ejeBVal,
+      Categoria: catVal,
+      categoria: catVal,
+      estadoOperacion: r.estadoOperacion || estadoOperacion
+    };
   }
 
   function buscarEvaluacionPrevia(personaObj) {
@@ -795,35 +832,56 @@
     const sel = document.getElementById("selectPersona");
     sel.innerHTML = `<option value="">Cargando personas asignadas...</option>`;
     evaluacionesExistentesMap = {};
+    historialSesion = [];
 
     try {
       const respPersonas = await apiPost({ action: "obtener_personas", token: sessionData.token });
       if (!respPersonas.ok) {
         sel.innerHTML = `<option value="">Error al cargar lista</option>`;
         showAlert("appAlert", respPersonas.error || "No se pudieron obtener las personas.");
+        renderTablaSesion();
         return;
       }
 
       personasList = respPersonas.personas || [];
 
-      // Si el backend devuelve evaluacionesPrevias o el usuario tiene acceso al dashboard, intentamos cargarlas para evitar duplicados
-      if (Array.isArray(respPersonas.evaluacionesPrevias)) {
-        respPersonas.evaluacionesPrevias.forEach(registrarEvaluacionEnMapa);
-      } else if (sessionData.accesoKpi) {
+      let previasRaw = Array.isArray(respPersonas.evaluacionesPrevias) ? respPersonas.evaluacionesPrevias : [];
+
+      if (previasRaw.length === 0 && sessionData.accesoKpi) {
         try {
           const respDash = await apiPost({ action: "obtener_dashboard", token: sessionData.token });
           if (respDash.ok && Array.isArray(respDash.registros)) {
-            respDash.registros.forEach(registrarEvaluacionEnMapa);
+            const areaUser = normalizarClave(sessionData.areaAsignada);
+            const esTodas = !areaUser || areaUser === "todas";
+            previasRaw = respDash.registros.filter(r =>
+              esTodas || normalizarClave(r.Area) === areaUser
+            );
           }
         } catch (_) {
-          // Si no aplica, se controlará también con los registros de la sesión y respuesta del servidor
+          // Si falla el dashboard secundario, se mantiene lo obtenido en obtener_personas
         }
       }
 
+      const normalizadas = previasRaw.map(r => normalizarRegistroEvaluacion(r, "Registrado"));
+      normalizadas.forEach(reg => registrarEvaluacionEnMapa(reg));
+
+      // Mostrar en la tabla las evaluaciones previas correspondientes a las personas asignadas o del área
+      const personasAsignadasIds = new Set(personasList.map(p => normalizarClave(p.idPersona)).filter(Boolean));
+      const personasAsignadasNombres = new Set(personasList.map(p => normalizarClave(p.nombreCompleto)).filter(Boolean));
+
+      historialSesion = normalizadas.filter(reg => {
+        if (personasList.length === 0) return true;
+        const matchId = reg.idPersona && personasAsignadasIds.has(normalizarClave(reg.idPersona));
+        const matchNom = reg.personaEvaluada && personasAsignadasNombres.has(normalizarClave(reg.personaEvaluada));
+        return matchId || matchNom;
+      });
+
       poblarSelectorPersonas();
+      renderTablaSesion();
     } catch (err) {
       sel.innerHTML = `<option value="">Error de conexión</option>`;
       showAlert("appAlert", "Error al cargar personas: " + err.message);
+      renderTablaSesion();
     }
   }
 
@@ -1104,32 +1162,24 @@
       }
 
       const idFinal = resp.id || (esEdicion ? registroEnEdicion.id : "");
-      const registroGuardado = {
+      const registroGuardado = normalizarRegistroEvaluacion({
         ID: idFinal,
-        id: idFinal,
         FechaHora: resp.fechaHora || new Date().toISOString().slice(0, 19).replace("T", " "),
         Area: resp.area || sessionData.areaAsignada,
         Evaluador: resp.evaluador || sessionData.nombreJefe || sessionData.usuario,
         PuestoEvaluador: resp.puestoEvaluador || sessionData.puestoJefe || "",
         ID_Persona: personaObj.idPersona,
-        idPersona: personaObj.idPersona,
         PersonaEvaluada: personaObj.nombreCompleto,
-        personaEvaluada: personaObj.nombreCompleto,
         Puesto: puesto,
-        puesto,
         Impacto: scores.impacto,
         Complejidad: scores.complejidad,
         Escasez: scores.escasez,
         Reemplazo: scores.reemplazo,
         Fuga: scores.fuga,
         EjeA: ejeA,
-        ejeA,
         EjeB: ejeB,
-        ejeB,
-        Categoria: categoria,
-        categoria,
-        estadoOperacion: esEdicion ? "Actualizado" : "Registrado"
-      };
+        Categoria: categoria
+      }, esEdicion ? "Actualizado" : "Registrado");
 
       registrarEvaluacionEnMapa(registroGuardado);
       poblarSelectorPersonas();
@@ -1163,7 +1213,10 @@
   function renderTablaSesion() {
     document.getElementById("countSesion").textContent = historialSesion.length;
     const tbody = document.getElementById("tablaSesionBody");
-    if (historialSesion.length === 0) return;
+    if (historialSesion.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#64748b;">Aún no has guardado evaluaciones en esta sesión.</td></tr>`;
+      return;
+    }
 
     tbody.innerHTML = historialSesion.map(r => `
       <tr>
@@ -1173,14 +1226,14 @@
         <td>${Number(r.ejeA).toFixed(2)}</td>
         <td>${Number(r.ejeB).toFixed(2)}</td>
         <td><strong>${r.categoria}</strong></td>
-        <td><span class="status-tag ${r.estadoOperacion === "Actualizado" ? "updated" : ""}">${r.estadoOperacion}</span></td>
+        <td><span class="status-tag ${r.estadoOperacion === "Actualizado" ? "updated" : ""}">${r.estadoOperacion || "Registrado"}</span></td>
       </tr>
     `).join("");
   }
 
   function descargarCSVLocal() {
     if (historialSesion.length === 0) {
-      showAlert("appAlert", "No hay evaluaciones registradas en esta sesión para exportar.");
+      showAlert("appAlert", "No hay evaluaciones registradas para exportar.");
       return;
     }
     const headers = ["ID","FechaHora","Area","Evaluador","PuestoEvaluador","ID_Persona","PersonaEvaluada","Puesto","Impacto","Complejidad","Escasez","Reemplazo","Fuga","EjeA","EjeB","Categoria","Estado"];
