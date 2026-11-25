@@ -10,14 +10,10 @@
       --card: #ffffff;
       --primary: #0f2942;
       --primary-light: #1e4b7a;
-      --accent: #0077b6;
+      --accent: #0284c7;
       --border: #dce3ec;
       --text: #1e293b;
       --muted: #64748b;
-      --danger: #dc2626;
-      --warning: #d97706;
-      --success: #059669;
-      --info: #2563eb;
     }
     * { box-sizing: border-box; }
     body {
@@ -51,31 +47,36 @@
       gap: 12px;
     }
     .container {
-      max-width: 1180px;
+      max-width: 1220px;
       margin: 24px auto;
       padding: 0 16px 40px;
     }
     .card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 22px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
       margin-bottom: 20px;
     }
     .card h2 {
       margin-top: 0;
-      font-size: 1.08rem;
+      font-size: 1.06rem;
       color: var(--primary);
       border-bottom: 1px solid var(--border);
       padding-bottom: 10px;
       margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .login-box { max-width: 440px; margin: 48px auto; }
     .form-group { margin-bottom: 14px; }
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 600;
       margin-bottom: 5px;
       color: var(--primary);
@@ -94,18 +95,18 @@
       color: #475569;
       cursor: not-allowed;
     }
-    .grid-2 {
+    .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
     }
     .main-grid {
       display: grid;
-      grid-template-columns: 1.35fr 1fr;
+      grid-template-columns: 1.15fr 1fr;
       gap: 20px;
       align-items: start;
     }
-    @media (max-width: 920px) { .main-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 980px) { .main-grid { grid-template-columns: 1fr; } }
     .factor-box {
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -119,9 +120,9 @@
       align-items: center;
       margin-bottom: 8px;
     }
-    .factor-title { font-weight: 700; font-size: 0.94rem; color: var(--primary); }
+    .factor-title { font-weight: 700; font-size: 0.93rem; color: var(--primary); }
     .factor-weight {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       background: #e0f2fe;
       color: #0369a1;
       padding: 2px 8px;
@@ -146,9 +147,9 @@
     }
     .scale-btn:hover { border-color: var(--accent); }
     .scale-btn.active {
-      background: var(--accent);
+      background: var(--primary);
       color: #fff;
-      border-color: var(--accent);
+      border-color: var(--primary);
     }
     .rubric-desc {
       font-size: 0.82rem;
@@ -162,19 +163,18 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 10px 16px;
-      border-radius: 8px;
+      gap: 8px;
+      padding: 11px 16px;
+      border-radius: 10px;
       border: none;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.9rem;
       cursor: pointer;
       transition: opacity 0.15s;
     }
-    .btn:hover { opacity: 0.92; }
+    .btn:hover { opacity: 0.93; }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; }
     .btn-primary { background: var(--primary); color: #fff; }
-    .btn-accent { background: var(--accent); color: #fff; }
     .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
     .btn-danger-sm {
       background: rgba(255,255,255,0.2);
@@ -185,33 +185,102 @@
       border-radius: 6px;
       cursor: pointer;
     }
-    .result-pill {
-      padding: 14px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: 700;
-      margin-bottom: 14px;
-      border: 1px solid transparent;
+
+    /* Matriz 2x2 */
+    .matrix-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
     }
-    .cat-critico { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-    .cat-estrategico { background: #fffbeb; color: #92400e; border-color: #fde68a; }
-    .cat-vulnerable { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-    .cat-operativo { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-    .kpi-mini {
+    .matrix-frame {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    /* Cuadro Informativo de Diagnóstico */
+    .diag-card {
+      border: 1px solid #dce3ec;
+      border-radius: 14px;
+      padding: 20px;
+      background: #ffffff;
+      margin-top: 18px;
+    }
+    .diag-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .diag-pill {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .diag-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .diag-title {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      line-height: 1.25;
+      color: #0f172a;
+      font-weight: 800;
+    }
+    .diag-desc {
+      margin: 0 0 14px;
+      font-size: 0.9rem;
+      color: #475569;
+    }
+    .diag-divider {
+      border: 0;
+      border-top: 1px solid #e2e8f0;
+      margin: 14px 0;
+    }
+    .diag-plan-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .diag-plan-text {
+      margin: 0 0 16px;
+      font-size: 0.9rem;
+      color: #1e293b;
+      font-weight: 500;
+    }
+    .scores-strip {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-bottom: 14px;
     }
-    .kpi-mini div {
+    .score-box {
       background: #f8fafc;
-      border: 1px solid var(--border);
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
-      padding: 10px;
-      text-align: center;
+      padding: 8px 12px;
+      font-size: 0.82rem;
     }
-    .kpi-mini span { display: block; font-size: 0.76rem; color: var(--muted); }
-    .kpi-mini strong { font-size: 1.2rem; color: var(--primary); }
+    .score-box span { color: #64748b; }
+    .score-box strong { color: var(--primary); font-size: 0.96rem; margin-left: 4px; }
+
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th, td {
       padding: 9px 10px;
@@ -220,7 +289,7 @@
     }
     th { background: #f8fafc; color: var(--primary); font-weight: 700; }
     .alert {
-      padding: 10px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       font-size: 0.86rem;
       margin-bottom: 14px;
@@ -236,7 +305,7 @@
 <header>
   <div>
     <h1>Evaluador de Puestos Críticos</h1>
-    <p>Metodología Hay Group / Korn Ferry &bull; Matriz de Valor e Impacto vs. Riesgo y Escasez</p>
+    <p>Metodología Hay Group / Korn Ferry &bull; Matriz de Posicionamiento 2&times;2</p>
   </div>
   <div id="headerUserBox" class="user-badge hidden">
     <div>
@@ -247,7 +316,7 @@
   </div>
 </header>
 
-<!-- VISTA LOGIN -->
+<!-- LOGIN -->
 <div id="loginView" class="container">
   <div class="card login-box">
     <h2>Acceso para Jefes Evaluadores</h2>
@@ -258,7 +327,7 @@
     </div>
     <div class="form-group">
       <label for="loginUser">Usuario</label>
-      <input type="text" id="loginUser" placeholder="Ej. jefe.finanzas" autocomplete="username" />
+      <input type="text" id="loginUser" placeholder="Ej. jefe.rrhh" autocomplete="username" />
     </div>
     <div class="form-group">
       <label for="loginPass">Contraseña</label>
@@ -268,15 +337,15 @@
   </div>
 </div>
 
-<!-- VISTA EVALUADOR -->
+<!-- APLICATIVO PRINCIPAL -->
 <div id="appView" class="container hidden">
   <div id="appAlert" class="alert"></div>
 
   <div class="card">
     <h2>1. Datos del Evaluador y Persona a Evaluar</h2>
-    <div class="grid-2">
+    <div class="grid-3">
       <div class="form-group">
-        <label>Jefe Evaluador (cargado desde Usuarios)</label>
+        <label>Jefe Evaluador</label>
         <input type="text" id="evalNombreJefe" readonly />
       </div>
       <div class="form-group">
@@ -294,7 +363,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="evalPuestoPersona">Puesto / Cargo de la Persona Evaluada *</label>
+        <label for="evalPuestoPersona">Puesto / Cargo a Evaluar *</label>
         <input type="text" id="evalPuestoPersona" placeholder="Se autocompleta al elegir persona" />
       </div>
       <div class="form-group">
@@ -305,77 +374,138 @@
   </div>
 
   <div class="main-grid">
-    <!-- FORMULARIO DE FACTORES -->
-    <div>
-      <div class="card">
-        <h2>2. Evaluación por Factores (Escala 1 al 5)</h2>
+    <!-- FACTORES -->
+    <div class="card">
+      <h2>2. Evaluación por Factores (Escala 1.0 a 5.0)</h2>
 
-        <h3 style="font-size:0.95rem;color:#0369a1;margin:0 0 10px;">Eje A: Valor e Impacto Estratégico</h3>
-        <div id="factoresEjeA"></div>
+      <h3 style="font-size:0.94rem;color:#0f2942;margin:0 0 10px;">Eje A: Valor e Impacto del Puesto</h3>
+      <div id="factoresEjeA"></div>
 
-        <h3 style="font-size:0.95rem;color:#b45309;margin:18px 0 10px;">Eje B: Riesgo y Escasez de Talento</h3>
-        <div id="factoresEjeB"></div>
-
-        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
-          <button id="btnGuardar" class="btn btn-accent" onclick="guardarEvaluacion()">Guardar Evaluación en Google Sheets</button>
-          <button class="btn btn-outline" onclick="descargarCSVLocal()">Descargar Respaldo CSV</button>
-        </div>
-      </div>
+      <h3 style="font-size:0.94rem;color:#0f2942;margin:18px 0 10px;">Eje B: Riesgo y Escasez de Talento</h3>
+      <div id="factoresEjeB"></div>
     </div>
 
-    <!-- MATRIZ Y RESULTADO EN VIVO -->
+    <!-- MATRIZ 2x2 + CUADRO INFORMATIVO -->
     <div>
       <div class="card">
-        <h2>3. Resultado y Matriz 2&times;2</h2>
-        <div id="resultadoCategoria" class="result-pill cat-operativo">
-          Puesto Operativo Estándar
+        <h2>
+          <span>MATRIZ DE POSICIONAMIENTO 2&times;2</span>
+          <span class="matrix-sub">Eje X: Riesgo | Eje Y: Valor</span>
+        </h2>
+
+        <div class="matrix-frame">
+          <svg id="matrizSvg" viewBox="0 0 420 390" style="width:100%;height:auto;display:block;">
+            <!-- Área del gráfico: X de 75 a 395 (ancho 320), Y de 25 a 325 (alto 300) -->
+            <!-- Corte 3.5 en ambos ejes: (3.5 - 1.0) / 4.0 = 0.625 -->
+            <!-- X corte = 75 + 0.625 * 320 = 275 -->
+            <!-- Y corte = 325 - 0.625 * 300 = 137.5 -->
+
+            <!-- 3. PUESTO CLAVE (Arriba Izquierda: Y >= 3.5, X < 3.5) -->
+            <rect x="75" y="25" width="200" height="112.5" fill="#eef2ff" />
+            <!-- 1. CRÍTICO ESTRATÉGICO (Arriba Derecha: Y >= 3.5, X >= 3.5) -->
+            <rect x="275" y="25" width="120" height="112.5" fill="#fdf2f2" />
+            <!-- 4. ESTÁNDAR / SOPORTE (Abajo Izquierda: Y < 3.5, X < 3.5) -->
+            <rect x="75" y="137.5" width="200" height="187.5" fill="#f8fafc" />
+            <!-- 2. CRÍTICO OPERATIVO (Abajo Derecha: Y < 3.5, X >= 3.5) -->
+            <rect x="275" y="137.5" width="120" height="187.5" fill="#fefce8" />
+
+            <!-- Borde exterior -->
+            <rect x="75" y="25" width="320" height="300" fill="none" stroke="#334155" stroke-width="1.2" />
+
+            <!-- Líneas divisorias de cuadrantes (corte 3.5) -->
+            <line x1="275" y1="25" x2="275" y2="325" stroke="#475569" stroke-width="1.5" stroke-dasharray="6,4" />
+            <line x1="75" y1="137.5" x2="395" y2="137.5" stroke="#475569" stroke-width="1.5" stroke-dasharray="6,4" />
+
+            <!-- Títulos de cuadrantes -->
+            <text x="88" y="47" font-size="11.5" font-weight="800" fill="#4338ca">3. PUESTO CLAVE</text>
+            <text x="88" y="63" font-size="10.5" font-weight="500" fill="#6366f1">Alto valor / Mercado disponible</text>
+
+            <text x="285" y="47" font-size="11.5" font-weight="800" fill="#b91c1c">1. CRÍTICO ESTRATÉGICO</text>
+            <text x="285" y="63" font-size="10.5" font-weight="500" fill="#dc2626">Prioridad máxima</text>
+
+            <text x="88" y="294" font-size="11.5" font-weight="800" fill="#334155">4. ESTÁNDAR / SOPORTE</text>
+            <text x="88" y="310" font-size="10.5" font-weight="500" fill="#64748b">Gestión regular de RR.HH.</text>
+
+            <text x="285" y="294" font-size="11.5" font-weight="800" fill="#b45309">2. CRÍTICO OPERATIVO</text>
+            <text x="285" y="310" font-size="10.5" font-weight="500" fill="#d97706">Cuello de botella técnico</text>
+
+            <!-- Líneas punteadas de proyección hacia los ejes -->
+            <line id="guiaHorizontal" x1="75" y1="175" x2="235" y2="175" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+            <line id="guiaVertical" x1="235" y1="175" x2="235" y2="325" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+
+            <!-- Etiquetas numéricas Eje Y (1.0 a 5.0, con 3.5 destacado) -->
+            <text x="66" y="30" font-size="11" fill="#64748b" text-anchor="end">5.0</text>
+            <text x="66" y="100" font-size="11" fill="#64748b" text-anchor="end">4.0</text>
+            <text x="66" y="141" font-size="11.5" font-weight="800" fill="#0f172a" text-anchor="end">3.5</text>
+            <text x="66" y="179" font-size="11" fill="#64748b" text-anchor="end">3.0</text>
+            <text x="66" y="250" font-size="11" fill="#64748b" text-anchor="end">2.0</text>
+            <text x="66" y="325" font-size="11" fill="#64748b" text-anchor="end">1.0</text>
+
+            <!-- Etiquetas numéricas Eje X (1.0 a 5.0, con 3.5 destacado) -->
+            <text x="75" y="342" font-size="11" fill="#64748b" text-anchor="middle">1.0</text>
+            <text x="155" y="342" font-size="11" fill="#64748b" text-anchor="middle">2.0</text>
+            <text x="235" y="342" font-size="11" fill="#64748b" text-anchor="middle">3.0</text>
+            <text x="275" y="342" font-size="11.5" font-weight="800" fill="#0f172a" text-anchor="middle">3.5</text>
+            <text x="315" y="342" font-size="11" fill="#64748b" text-anchor="middle">4.0</text>
+            <text x="395" y="342" font-size="11" fill="#64748b" text-anchor="middle">5.0</text>
+
+            <!-- Título Eje X -->
+            <text x="235" y="374" font-size="12" font-weight="800" fill="#0f172a" text-anchor="middle">Eje B: Riesgo y Escasez de Talento &rarr;</text>
+
+            <!-- Título Eje Y -->
+            <text x="22" y="175" font-size="12" font-weight="800" fill="#0f172a" text-anchor="middle" transform="rotate(-90, 22, 175)">Eje A: Valor e Impacto del Puesto &rarr;</text>
+
+            <!-- Punto actual -->
+            <circle id="puntoMatriz" cx="235" cy="175" r="9" fill="#0f172a" stroke="#ffffff" stroke-width="3" />
+
+            <!-- Pill flotante de coordenadas -->
+            <g id="badgeCoords" transform="translate(235, 145)">
+              <rect x="-36" y="-13" width="72" height="22" rx="11" fill="#0f172a" />
+              <text id="textoCoords" x="0" y="2" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">(3.0, 3.0)</text>
+            </g>
+          </svg>
         </div>
-        <div class="kpi-mini">
-          <div>
-            <span>Eje A: Valor / Impacto</span>
-            <strong id="valEjeA">3.00</strong>
+
+        <!-- CUADRO INFORMATIVO DE DIAGNÓSTICO Y PLAN DE ACCIÓN -->
+        <div id="diagCard" class="diag-card">
+          <div class="diag-top">
+            <span id="diagPill" class="diag-pill">4. PUESTO ESTÁNDAR / SOPORTE</span>
+            <div id="diagIcon" class="diag-icon">&#10003;</div>
           </div>
-          <div>
-            <span>Eje B: Riesgo / Escasez</span>
-            <strong id="valEjeB">3.00</strong>
+
+          <h3 id="diagTitle" class="diag-title">Gestión Estándar y Eficiencia Operativa</h3>
+          <p id="diagDesc" class="diag-desc">
+            El puesto presenta un impacto estructural moderado/bajo y cuenta con suficiente oferta en el mercado laboral o facilidad de reemplazo interno.
+          </p>
+
+          <div class="scores-strip">
+            <div class="score-box"><span>Eje A (Valor/Impacto):</span><strong id="lblEjeA">3.00</strong></div>
+            <div class="score-box"><span>Eje B (Riesgo/Escasez):</span><strong id="lblEjeB">3.00</strong></div>
+          </div>
+
+          <hr class="diag-divider" />
+
+          <div class="diag-plan-label">PLAN DE ACCIÓN RECOMENDADO (RR.HH.):</div>
+          <p id="diagPlan" class="diag-plan-text">
+            Mantener procesos regulares de selección, capacitación estándar y evaluación periódica del desempeño.
+          </p>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button id="btnGuardar" class="btn btn-primary" style="width:100%;" onclick="guardarEvaluacion()">
+              + Guardar evaluación en Google Sheets
+            </button>
+            <button class="btn btn-outline" style="width:100%;" onclick="descargarCSVLocal()">
+              Descargar respaldo CSV de sesión
+            </button>
           </div>
         </div>
-
-        <svg id="matrizSvg" viewBox="0 0 340 310" style="width:100%;max-width:360px;display:block;margin:0 auto;">
-          <!-- Cuadrantes (Corte 3.5) -->
-          <!-- Superior Izquierdo: Eje A >= 3.5, Eje B < 3.5 (Estratégico) -->
-          <rect x="50" y="20" width="162.5" height="97.5" fill="#fef3c7" stroke="#cbd5e1" />
-          <!-- Superior Derecho: Eje A >= 3.5, Eje B >= 3.5 (Crítico) -->
-          <rect x="212.5" y="20" width="97.5" height="97.5" fill="#fee2e2" stroke="#cbd5e1" />
-          <!-- Inferior Izquierdo: Eje A < 3.5, Eje B < 3.5 (Operativo) -->
-          <rect x="50" y="117.5" width="162.5" height="162.5" fill="#dcfce7" stroke="#cbd5e1" />
-          <!-- Inferior Derecho: Eje A < 3.5, Eje B >= 3.5 (Vulnerable) -->
-          <rect x="212.5" y="117.5" width="97.5" height="162.5" fill="#dbeafe" stroke="#cbd5e1" />
-
-          <!-- Etiquetas cuadrantes -->
-          <text x="131" y="42" font-size="10" font-weight="bold" fill="#92400e" text-anchor="middle">PUESTO ESTRATÉGICO</text>
-          <text x="261" y="42" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">PUESTO CRÍTICO</text>
-          <text x="131" y="268" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">OPERATIVO ESTÁNDAR</text>
-          <text x="261" y="268" font-size="10" font-weight="bold" fill="#1e40af" text-anchor="middle">VULNERABLE</text>
-
-          <!-- Líneas de corte 3.5 -->
-          <line x1="212.5" y1="20" x2="212.5" y2="280" stroke="#64748b" stroke-dasharray="4" />
-          <line x1="50" y1="117.5" x2="310" y2="117.5" stroke="#64748b" stroke-dasharray="4" />
-
-          <!-- Ejes -->
-          <text x="180" y="300" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">Eje B: Riesgo y Escasez (1.0 &rarr; 5.0)</text>
-          <text x="16" y="150" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle" transform="rotate(-90, 16, 150)">Eje A: Valor e Impacto (1.0 &rarr; 5.0)</text>
-
-          <!-- Punto dinámico -->
-          <circle id="puntoMatriz" cx="180" cy="150" r="8" fill="#0f2942" stroke="#ffffff" stroke-width="2.5" />
-        </svg>
       </div>
     </div>
   </div>
 
-  <!-- HISTORIAL DE LA SESIÓN -->
+  <!-- TABLA COMPARATIVA / HISTORIAL DE SESIÓN -->
   <div class="card">
-    <h2>4. Evaluaciones Registradas en esta Sesión (<span id="countSesion">0</span>)</h2>
+    <h2>Evaluaciones Registradas en esta Sesión (<span id="countSesion">0</span>)</h2>
     <div style="overflow-x:auto;">
       <table>
         <thead>
@@ -383,9 +513,9 @@
             <th>ID</th>
             <th>Persona Evaluada</th>
             <th>Puesto</th>
-            <th>Eje A</th>
-            <th>Eje B</th>
-            <th>Categoría</th>
+            <th>Eje A (Valor)</th>
+            <th>Eje B (Riesgo)</th>
+            <th>Cuadrante / Categoría</th>
           </tr>
         </thead>
         <tbody id="tablaSesionBody">
@@ -455,6 +585,41 @@
     }
   ];
 
+  const CUADRANTES = {
+    criticoEstrategico: {
+      categoria: "1. CRÍTICO ESTRATÉGICO",
+      pillBg: "#fee2e2", pillColor: "#b91c1c",
+      iconBg: "#fee2e2", iconColor: "#b91c1c", icon: "!",
+      titulo: "Prioridad Máxima y Retención Crítica",
+      desc: "El puesto combina alto valor/impacto estratégico con alta escasez de talento o riesgo de reemplazo.",
+      plan: "Diseñar plan de sucesión inmediato, retención focalizada, compensación competitiva y shadowing con talento clave."
+    },
+    criticoOperativo: {
+      categoria: "2. CRÍTICO OPERATIVO",
+      pillBg: "#fef3c7", pillColor: "#b45309",
+      iconBg: "#fef3c7", iconColor: "#b45309", icon: "▲",
+      titulo: "Cuello de Botella Técnico y Continuidad",
+      desc: "El puesto presenta alto riesgo o dificultad de reemplazo con impacto operativo/técnico relevante.",
+      plan: "Documentar procesos críticos, formar respaldo interno (backup) y fortalecer el pipeline de selección preventiva."
+    },
+    puestoClave: {
+      categoria: "3. PUESTO CLAVE",
+      pillBg: "#e0e7ff", pillColor: "#4338ca",
+      iconBg: "#e0e7ff", iconColor: "#4338ca", icon: "★",
+      titulo: "Alto Valor con Disponibilidad en el Mercado",
+      desc: "El puesto aporta alto valor o impacto al negocio y cuenta con mayor disponibilidad de talento o menor riesgo relativo.",
+      plan: "Asegurar onboarding estructurado, metas alineadas al negocio y desarrollo de desempeño continuo."
+    },
+    estandarSoporte: {
+      categoria: "4. PUESTO ESTÁNDAR / SOPORTE",
+      pillBg: "#e2e8f0", pillColor: "#334155",
+      iconBg: "#f1f5f9", iconColor: "#334155", icon: "✓",
+      titulo: "Gestión Estándar y Eficiencia Operativa",
+      desc: "El puesto presenta un impacto estructural moderado/bajo y cuenta con suficiente oferta en el mercado laboral o facilidad de reemplazo interno.",
+      plan: "Mantener procesos regulares de selección, capacitación estándar y evaluación periódica del desempeño."
+    }
+  };
+
   let scores = { impacto: 3, complejidad: 3, escasez: 3, reemplazo: 3, fuga: 3 };
   let sessionData = null;
   let personasList = [];
@@ -507,15 +672,10 @@
       const resp = await apiPost({ action: "login", usuario, password });
       if (!resp.ok) {
         showAlert("loginAlert", resp.error || "No se pudo iniciar sesión.");
-        btn.disabled = false;
-        btn.textContent = "Ingresar al Evaluador";
         return;
       }
-
       if (resp.rol !== "evaluador") {
         showAlert("loginAlert", "Este usuario no tiene rol de evaluador.");
-        btn.disabled = false;
-        btn.textContent = "Ingresar al Evaluador";
         return;
       }
 
@@ -622,34 +782,53 @@
     const ejeA = Number((scores.impacto * 0.60 + scores.complejidad * 0.40).toFixed(2));
     const ejeB = Number((scores.escasez * 0.40 + scores.reemplazo * 0.35 + scores.fuga * 0.25).toFixed(2));
 
-    document.getElementById("valEjeA").textContent = ejeA.toFixed(2);
-    document.getElementById("valEjeB").textContent = ejeB.toFixed(2);
-
-    let categoria = "Puesto Operativo Estándar";
-    let clase = "cat-operativo";
+    let quad = CUADRANTES.estandarSoporte;
     if (ejeA >= 3.5 && ejeB >= 3.5) {
-      categoria = "Puesto Crítico";
-      clase = "cat-critico";
-    } else if (ejeA >= 3.5 && ejeB < 3.5) {
-      categoria = "Puesto Estratégico";
-      clase = "cat-estrategico";
+      quad = CUADRANTES.criticoEstrategico;
     } else if (ejeA < 3.5 && ejeB >= 3.5) {
-      categoria = "Puesto Vulnerable";
-      clase = "cat-vulnerable";
+      quad = CUADRANTES.criticoOperativo;
+    } else if (ejeA >= 3.5 && ejeB < 3.5) {
+      quad = CUADRANTES.puestoClave;
     }
 
-    const pill = document.getElementById("resultadoCategoria");
-    pill.textContent = categoria;
-    pill.className = "result-pill " + clase;
+    // Coordenadas SVG: X = Eje B (1.0 -> 75, 5.0 -> 395), Y = Eje A (1.0 -> 325, 5.0 -> 25)
+    const cx = 75 + ((ejeB - 1.0) / 4.0) * 320;
+    const cy = 325 - ((ejeA - 1.0) / 4.0) * 300;
 
-    // Coordenadas SVG: X (Eje B: 1->50, 5->310), Y (Eje A: 1->280, 5->20)
-    const cx = 50 + ((ejeB - 1) / 4) * 260;
-    const cy = 280 - ((ejeA - 1) / 4) * 260;
-    const punto = document.getElementById("puntoMatriz");
-    punto.setAttribute("cx", cx);
-    punto.setAttribute("cy", cy);
+    document.getElementById("guiaHorizontal").setAttribute("x2", cx);
+    document.getElementById("guiaHorizontal").setAttribute("y1", cy);
+    document.getElementById("guiaHorizontal").setAttribute("y2", cy);
 
-    return { ejeA, ejeB, categoria };
+    document.getElementById("guiaVertical").setAttribute("x1", cx);
+    document.getElementById("guiaVertical").setAttribute("x2", cx);
+    document.getElementById("guiaVertical").setAttribute("y1", cy);
+
+    document.getElementById("puntoMatriz").setAttribute("cx", cx);
+    document.getElementById("puntoMatriz").setAttribute("cy", cy);
+
+    const pillX = Math.min(Math.max(cx, 115), 355);
+    const pillY = cy > 65 ? cy - 28 : cy + 32;
+    document.getElementById("badgeCoords").setAttribute("transform", `translate(${pillX}, ${pillY})`);
+    document.getElementById("textoCoords").textContent = `(${ejeB.toFixed(1)}, ${ejeA.toFixed(1)})`;
+
+    // Actualizar tarjeta informativa
+    const pill = document.getElementById("diagPill");
+    pill.textContent = quad.categoria;
+    pill.style.background = quad.pillBg;
+    pill.style.color = quad.pillColor;
+
+    const icon = document.getElementById("diagIcon");
+    icon.textContent = quad.icon;
+    icon.style.background = quad.iconBg;
+    icon.style.color = quad.iconColor;
+
+    document.getElementById("diagTitle").textContent = quad.titulo;
+    document.getElementById("diagDesc").textContent = quad.desc;
+    document.getElementById("diagPlan").textContent = quad.plan;
+    document.getElementById("lblEjeA").textContent = ejeA.toFixed(2);
+    document.getElementById("lblEjeB").textContent = ejeB.toFixed(2);
+
+    return { ejeA, ejeB, categoria: quad.categoria };
   }
 
   async function guardarEvaluacion() {
@@ -714,7 +893,6 @@
       renderTablaSesion();
       showAlert("appAlert", `Evaluación guardada correctamente (ID: ${resp.id}) para ${personaObj.nombreCompleto}.`, false);
 
-      // Limpiar selección para siguiente persona
       document.getElementById("selectPersona").value = "";
       document.getElementById("evalPuestoPersona").value = "";
       document.getElementById("evalIdPersona").value = "";
@@ -722,7 +900,7 @@
       showAlert("appAlert", "Error de red al guardar: " + err.message);
     } finally {
       btn.disabled = false;
-      btn.textContent = "Guardar Evaluación en Google Sheets";
+      btn.textContent = "+ Guardar evaluación en Google Sheets";
     }
   }
 
