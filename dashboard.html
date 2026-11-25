@@ -1,785 +1,595 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Consolidado de KPIs | Hay Group / Korn Ferry</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            navy: { 800: '#1e3a5f', 900: '#0f233c', 950: '#091526' }
-          }
-        }
-      }
-    };
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard KPI - Puestos Críticos | Metodología Hay Group / Korn Ferry</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --primary: #0f2942;
+      --primary-light: #1e4b7a;
+      --accent: #0284c7;
+      --border: #cbd5e1;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(15, 41, 66, 0.18);
+    }
+    header h1 { margin: 0; font-size: 1.25rem; }
+    header p { margin: 2px 0 0; font-size: 0.84rem; opacity: 0.88; }
+    .user-badge {
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.28);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .container { max-width: 1280px; margin: 22px auto; padding: 0 16px 40px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      color: var(--primary);
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    .login-box { max-width: 440px; margin: 48px auto; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.84rem; font-weight: 600; margin-bottom: 5px; color: var(--primary); }
+    input[type="text"], input[type="password"], input[type="url"], select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    .btn {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--border); }
+    .btn-danger-sm {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      border-top: 4px solid var(--primary);
+    }
+    .kpi-card.critico { border-top-color: #dc2626; }
+    .kpi-card.estrategico { border-top-color: #d97706; }
+    .kpi-card.vulnerable { border-top-color: #2563eb; }
+    .kpi-card.operativo { border-top-color: #059669; }
+    .kpi-card span { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+    .kpi-card strong { display: block; font-size: 1.75rem; color: var(--primary); margin-top: 4px; }
+    .kpi-card small { font-size: 0.78rem; color: var(--muted); }
+    .filters-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    .grid-charts {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 20px;
+    }
+    @media (max-width: 960px) { .grid-charts { grid-template-columns: 1fr; } }
+    .area-row { margin-bottom: 12px; }
+    .area-row-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f8fafc; color: var(--primary); font-weight: 700; position: sticky; top: 0; }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .b-critico { background: #fee2e2; color: #991b1b; }
+    .b-estrategico { background: #fef3c7; color: #92400e; }
+    .b-vulnerable { background: #dbeafe; color: #1e40af; }
+    .b-operativo { background: #dcfce7; color: #166534; }
+    .alert { padding: 10px 12px; border-radius: 8px; font-size: 0.86rem; margin-bottom: 14px; display: none; }
+    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .hidden { display: none !important; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-100 selection:text-navy-900">
+<body>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-sm">
-    <div id="toastBox" class="bg-navy-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium border border-slate-700">
-      <svg id="toastIcon" class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+<header>
+  <div>
+    <h1>Dashboard Consolidado de Criticidad de Puestos</h1>
+    <p>Panel Gerencial de KPIs &bull; Metodología Hay Group / Korn Ferry</p>
+  </div>
+  <div id="headerUserBox" class="user-badge hidden">
+    <div>
+      <strong id="hdrUser">-</strong><br>
+      <span id="hdrScope" style="opacity:0.85;font-size:0.78rem;">-</span>
+    </div>
+    <button class="btn-danger-sm" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- VISTA LOGIN -->
+<div id="loginView" class="container">
+  <div class="card login-box">
+    <h2>Acceso al Dashboard de KPIs</h2>
+    <div id="loginAlert" class="alert alert-error"></div>
+    <div class="form-group">
+      <label for="apiUrlInput">URL del Web App (Google Apps Script /exec)</label>
+      <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" />
+    </div>
+    <div class="form-group">
+      <label for="loginUser">Usuario</label>
+      <input type="text" id="loginUser" placeholder="Ej. gerencia.kpi" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button id="btnLogin" class="btn btn-primary" style="width:100%;" onclick="handleLogin()">Ingresar al Dashboard</button>
+  </div>
+</div>
+
+<!-- VISTA DASHBOARD -->
+<div id="appView" class="container hidden">
+  <div id="appAlert" class="alert alert-error"></div>
+
+  <!-- FILTROS Y ACCIONES -->
+  <div class="card">
+    <div class="filters-bar">
+      <div>
+        <label for="filtroArea">Filtrar por Área</label>
+        <select id="filtroArea" onchange="aplicarFiltros()">
+          <option value="TODAS">Todas las áreas</option>
+        </select>
+      </div>
+      <div>
+        <label for="filtroCategoria">Filtrar por Categoría</label>
+        <select id="filtroCategoria" onchange="aplicarFiltros()">
+          <option value="TODAS">Todas las categorías</option>
+          <option value="Puesto Crítico">Puesto Crítico</option>
+          <option value="Puesto Estratégico">Puesto Estratégico</option>
+          <option value="Puesto Vulnerable">Puesto Vulnerable</option>
+          <option value="Puesto Operativo Estándar">Puesto Operativo Estándar</option>
+        </select>
+      </div>
+      <div>
+        <label for="filtroBuscar">Buscar Persona, Puesto o Jefe</label>
+        <input type="text" id="filtroBuscar" placeholder="Escribe para filtrar..." oninput="aplicarFiltros()" />
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-accent" onclick="cargarDatosDashboard()">Actualizar Datos</button>
+        <button class="btn btn-outline" onclick="exportarCSVFiltrado()">Exportar CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TARJETAS KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span>Total Evaluaciones</span>
+      <strong id="kpiTotal">0</strong>
+      <small id="kpiAreasCount">0 áreas reportando</small>
+    </div>
+    <div class="kpi-card critico">
+      <span>Puestos Críticos</span>
+      <strong id="kpiCriticos">0</strong>
+      <small id="kpiCriticosPct">0% del total</small>
+    </div>
+    <div class="kpi-card estrategico">
+      <span>Puestos Estratégicos</span>
+      <strong id="kpiEstrategicos">0</strong>
+      <small id="kpiEstrategicosPct">0% del total</small>
+    </div>
+    <div class="kpi-card vulnerable">
+      <span>Puestos Vulnerables</span>
+      <strong id="kpiVulnerables">0</strong>
+      <small id="kpiVulnerablesPct">0% del total</small>
+    </div>
+    <div class="kpi-card operativo">
+      <span>Operativos Estándar</span>
+      <strong id="kpiOperativos">0</strong>
+      <small id="kpiOperativosPct">0% del total</small>
+    </div>
+  </div>
+
+  <!-- MATRIZ Y DESGLOSE POR ÁREA -->
+  <div class="grid-charts">
+    <div class="card">
+      <h2>Mapa de Dispersión (Matriz 2&times;2)</h2>
+      <svg id="matrizDashboardSvg" viewBox="0 0 360 320" style="width:100%;max-width:420px;display:block;margin:0 auto;">
+        <rect x="50" y="20" width="175" height="105" fill="#fef3c7" stroke="#cbd5e1" />
+        <rect x="225" y="20" width="105" height="105" fill="#fee2e2" stroke="#cbd5e1" />
+        <rect x="50" y="125" width="175" height="175" fill="#dcfce7" stroke="#cbd5e1" />
+        <rect x="225" y="125" width="105" height="175" fill="#dbeafe" stroke="#cbd5e1" />
+
+        <text x="137" y="38" font-size="9.5" font-weight="bold" fill="#92400e" text-anchor="middle">ESTRATÉGICOS</text>
+        <text x="277" y="38" font-size="9.5" font-weight="bold" fill="#991b1b" text-anchor="middle">CRÍTICOS</text>
+        <text x="137" y="290" font-size="9.5" font-weight="bold" fill="#166534" text-anchor="middle">OPERATIVOS</text>
+        <text x="277" y="290" font-size="9.5" font-weight="bold" fill="#1e40af" text-anchor="middle">VULNERABLES</text>
+
+        <line x1="225" y1="20" x2="225" y2="300" stroke="#64748b" stroke-dasharray="4" />
+        <line x1="50" y1="125" x2="330" y2="125" stroke="#64748b" stroke-dasharray="4" />
+
+        <text x="190" y="315" font-size="10.5" font-weight="bold" fill="#1e293b" text-anchor="middle">Eje B: Riesgo y Escasez (1.0 &rarr; 5.0)</text>
+        <text x="15" y="160" font-size="10.5" font-weight="bold" fill="#1e293b" text-anchor="middle" transform="rotate(-90, 15, 160)">Eje A: Valor e Impacto (1.0 &rarr; 5.0)</text>
+
+        <g id="puntosGroup"></g>
       </svg>
-      <span id="toastMessage">Actualizado</span>
+    </div>
+
+    <div class="card">
+      <h2>Distribución por Área</h2>
+      <div id="desgloseAreas"></div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- PANTALLA DE LOGIN                                                     -->
-  <!-- ===================================================================== -->
-  <div id="loginView" class="min-h-screen flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
-    <div class="max-w-lg w-full mx-auto bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden">
-      <div class="bg-navy-950 text-white px-6 py-6 border-b border-slate-800">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold uppercase tracking-wide mb-2">
-          <span>Hay Group / Korn Ferry</span>
-          <span>•</span>
-          <span>Dashboard de KPIs</span>
-        </div>
-        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">Acceso al Dashboard Consolidado</h1>
-        <p class="text-xs sm:text-sm text-slate-300 mt-1">Requiere rol <code class="text-blue-200">dashboard</code> o permiso <code class="text-blue-200">AccesoKPI = SI</code>.</p>
-      </div>
-
-      <div class="p-6 sm:p-7 space-y-5">
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
-            <label for="loginGasUrl" class="text-xs font-bold uppercase tracking-wider text-slate-600">
-              URL Google Apps Script (Web App)
-            </label>
-            <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-              localStorage
-            </span>
-          </div>
-          <input type="url" id="loginGasUrl" placeholder="https://script.google.com/macros/s/.../exec"
-            onchange="saveGasUrl(this.value)"
-            class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
-        </div>
-
-        <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
-          <div>
-            <label for="loginUser" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-              Usuario
-            </label>
-            <input type="text" id="loginUser" required autocomplete="username" placeholder="Ej. gerencia.kpi"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-
-          <div>
-            <label for="loginPassword" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-              Contraseña
-            </label>
-            <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-
-          <div id="loginErrorBox" class="hidden bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm rounded-xl p-3 font-medium"></div>
-
-          <button type="submit" id="loginBtn"
-            class="w-full py-3 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm shadow-sm transition">
-            <span id="loginBtnText">Ingresar al Dashboard</span>
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- DASHBOARD PRINCIPAL                                                   -->
-  <!-- ===================================================================== -->
-  <div id="dashboardView" class="hidden min-h-screen flex flex-col">
-    <!-- Encabezado -->
-    <header class="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white border-b border-slate-800 shadow-md">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold tracking-wide uppercase mb-2">
-              <span>Consolidado en Vivo</span>
-              <span>•</span>
-              <span id="dashUserBadge">Usuario: -</span>
-              <span>•</span>
-              <span id="lastSyncBadge">Última sync: -</span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Dashboard de Criticidad de Puestos <span class="text-blue-300 font-semibold block sm:inline">(Hay Group / Korn Ferry)</span>
-            </h1>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button type="button" onclick="fetchDashboardData(false)" id="refreshBtn"
-              class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
-              <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-              <span>Actualizar en Vivo</span>
-            </button>
-
-            <label class="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/10 border border-white/15 text-xs sm:text-sm font-medium cursor-pointer select-none">
-              <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh(this.checked)" class="rounded text-blue-500 focus:ring-0">
-              <span>Auto-sync (30s)</span>
-            </label>
-
-            <button type="button" onclick="logout()"
-              class="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-100 text-xs sm:text-sm font-semibold border border-rose-400/30 transition">
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-
-        <!-- Barra de configuración de URL -->
-        <div class="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-2.5">
-          <label for="appGasUrl" class="text-xs font-bold uppercase tracking-wider text-blue-200 shrink-0">
-            URL Apps Script:
-          </label>
-          <input type="url" id="appGasUrl" placeholder="https://script.google.com/macros/s/.../exec"
-            onchange="saveGasUrl(this.value)"
-            class="flex-1 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
-        </div>
-      </div>
-    </header>
-
-    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 flex-1">
-
-      <!-- Filtros por Área y Búsqueda -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-          <div class="w-full sm:w-72">
-            <label for="areaFilterSelect" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Filtrar por Área Oficial
-            </label>
-            <select id="areaFilterSelect" onchange="applyFiltersAndRender()"
-              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600">
-              <option value="TODAS">Todas las Áreas (Consolidado)</option>
-            </select>
-          </div>
-
-          <div class="flex-1">
-            <label for="searchRoleInput" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Buscar Puesto o Evaluador
-            </label>
-            <input type="text" id="searchRoleInput" oninput="applyFiltersAndRender()" placeholder="Ej. Jefe, Packing, Finanzas, Analista..."
-              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2 pt-1 md:pt-5">
-          <button type="button" onclick="resetFilters()"
-            class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
-            Limpiar filtros
-          </button>
-          <button type="button" onclick="exportFilteredCSV()"
-            class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-            </svg>
-            Exportar CSV
-          </button>
-        </div>
-      </section>
-
-      <!-- 5 Tarjetas de KPIs -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Total Puestos Evaluados</span>
-          <span id="kpiTotal" class="text-3xl font-extrabold text-navy-900 mt-1 block">0</span>
-          <span class="text-xs text-slate-400 mt-1 block">Registros filtrados</span>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-rose-200">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-rose-700 block">Críticos Estratégicos</span>
-          <span id="kpiEstrategicos" class="text-3xl font-extrabold text-rose-700 mt-1 block">0</span>
-          <span id="kpiEstrategicosPct" class="text-xs font-semibold text-rose-600 mt-1 block">0.0% del total</span>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-amber-200">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-amber-800 block">Cuellos de Botella / Op.</span>
-          <span id="kpiOperativos" class="text-3xl font-extrabold text-amber-700 mt-1 block">0</span>
-          <span id="kpiOperativosPct" class="text-xs font-semibold text-amber-700 mt-1 block">0.0% del total</span>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 block">Promedio Eje A (Valor)</span>
-          <span id="kpiAvgEjeA" class="text-3xl font-extrabold text-blue-900 mt-1 block">0.00</span>
-          <span class="text-xs text-slate-400 mt-1 block">Corte crítico: ≥ 3.50</span>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">Promedio Eje B (Riesgo)</span>
-          <span id="kpiAvgEjeB" class="text-3xl font-extrabold text-slate-900 mt-1 block">0.00</span>
-          <span class="text-xs text-slate-400 mt-1 block">Corte crítico: ≥ 3.50</span>
-        </div>
-      </section>
-
-      <!-- Matriz 2x2 Interactiva + Desglose por Área -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-
-        <!-- Matriz 2x2 con todos los puestos plotados -->
-        <section class="lg:col-span-6 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <h2 class="text-lg font-extrabold text-slate-900">Matriz 2×2 de Criticidad</h2>
-              <p class="text-xs text-slate-500">Pasa el cursor o haz clic sobre un punto para inspeccionar el puesto.</p>
-            </div>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-              Corte: 3.50
-            </span>
-          </div>
-
-          <div class="w-full bg-slate-50 rounded-xl border border-slate-200 p-2 sm:p-3">
-            <svg id="dashMatrixSvg" viewBox="0 0 420 360" class="w-full h-auto select-none" role="img" aria-label="Matriz 2x2 Consolidada">
-              <rect x="60" y="20" width="206.25" height="105" fill="#eff6ff" stroke="#cbd5e1" stroke-width="1"/>
-              <rect x="266.25" y="20" width="123.75" height="105" fill="#fff1f2" stroke="#cbd5e1" stroke-width="1"/>
-              <rect x="60" y="125" width="206.25" height="175" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-              <rect x="266.25" y="125" width="123.75" height="175" fill="#fffbeb" stroke="#cbd5e1" stroke-width="1"/>
-
-              <line x1="266.25" y1="20" x2="266.25" y2="300" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4"/>
-              <line x1="60" y1="125" x2="390" y2="125" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4"/>
-
-              <text x="70" y="38" font-size="10" font-weight="700" fill="#1d4ed8">3. PUESTO CLAVE</text>
-              <text x="273" y="38" font-size="10" font-weight="800" fill="#be123c">1. CRÍTICO ESTRATÉGICO</text>
-              <text x="70" y="290" font-size="10" font-weight="700" fill="#475569">4. ESTÁNDAR / SOPORTE</text>
-              <text x="273" y="290" font-size="10" font-weight="700" fill="#b45309">2. CRÍTICO OPERATIVO</text>
-
-              <line x1="60" y1="20" x2="60" y2="300" stroke="#334155" stroke-width="1.5"/>
-              <line x1="60" y1="300" x2="390" y2="300" stroke="#334155" stroke-width="1.5"/>
-
-              <text x="52" y="303" text-anchor="end" font-size="10" fill="#64748b">1.0</text>
-              <text x="52" y="233" text-anchor="end" font-size="10" fill="#64748b">2.0</text>
-              <text x="52" y="163" text-anchor="end" font-size="10" fill="#64748b">3.0</text>
-              <text x="52" y="128" text-anchor="end" font-size="10" font-weight="700" fill="#0f233c">3.5</text>
-              <text x="52" y="93" text-anchor="end" font-size="10" fill="#64748b">4.0</text>
-              <text x="52" y="25" text-anchor="end" font-size="10" fill="#64748b">5.0</text>
-
-              <text x="60" y="316" text-anchor="middle" font-size="10" fill="#64748b">1.0</text>
-              <text x="142.5" y="316" text-anchor="middle" font-size="10" fill="#64748b">2.0</text>
-              <text x="225" y="316" text-anchor="middle" font-size="10" fill="#64748b">3.0</text>
-              <text x="266.25" y="316" text-anchor="middle" font-size="10" font-weight="700" fill="#0f233c">3.5</text>
-              <text x="307.5" y="316" text-anchor="middle" font-size="10" fill="#64748b">4.0</text>
-              <text x="390" y="316" text-anchor="middle" font-size="10" fill="#64748b">5.0</text>
-
-              <text x="225" y="344" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">Eje B: Riesgo y Escasez de Talento →</text>
-              <text x="18" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b" transform="rotate(-90 18 160)">Eje A: Valor e Impacto →</text>
-
-              <g id="dashPlotPoints"></g>
-            </svg>
-          </div>
-
-          <!-- Detalle del puesto seleccionado en la matriz -->
-          <div id="selectedPointCard" class="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
-            Selecciona o pasa el cursor sobre un punto de la matriz para ver el detalle del puesto.
-          </div>
-        </section>
-
-        <!-- Desglose por Área -->
-        <section class="lg:col-span-6 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
-          <div class="mb-4">
-            <h2 class="text-lg font-extrabold text-slate-900">Desglose por Área Organizacional</h2>
-            <p class="text-xs text-slate-500">Distribución de evaluaciones y críticos por cada una de las 8 áreas oficiales.</p>
-          </div>
-
-          <div id="areaBreakdownContainer" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
-            <!-- Generado por JS -->
-          </div>
-        </section>
-      </div>
-
-      <!-- Tabla Consolidada de Puestos -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-        <div class="p-5 sm:p-6 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-              Detalle Consolidado de Puestos Evaluados
-              <span id="tableCountBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                0
-              </span>
-            </h2>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th class="py-3.5 px-4">Puesto</th>
-                <th class="py-3.5 px-4">Área</th>
-                <th class="py-3.5 px-4">Evaluador</th>
-                <th class="py-3.5 px-3 text-center">Eje A</th>
-                <th class="py-3.5 px-3 text-center">Eje B</th>
-                <th class="py-3.5 px-4">Categoría</th>
-                <th class="py-3.5 px-4">Fecha</th>
-              </tr>
-            </thead>
-            <tbody id="dashboardTableBody" class="divide-y divide-slate-100 text-sm">
-              <tr>
-                <td colspan="7" class="py-10 px-4 text-center text-slate-400 text-sm">
-                  Sin datos cargados todavía.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <script>
-    const OFFICIAL_AREAS = [
-      "Recursos Humanos y SSOMA",
-      "Finanzas",
-      "Logística",
-      "Tecnología de la Información",
-      "Packing",
-      "GOA Chepén y Piura",
-      "GOA Chincha",
-      "Comercial y Sourcing"
-    ];
-
-    const STORAGE_KEYS = {
-      GAS_URL: "hay_group_gas_web_app_url",
-      SESSION: "hay_group_dashboard_session"
-    };
-
-    let currentSession = null;
-    let allRecords = [];
-    let filteredRecords = [];
-    let autoRefreshTimer = null;
-
-    function getGasUrl() {
-      const fromInput = (document.getElementById("appGasUrl")?.value || document.getElementById("loginGasUrl")?.value || "").trim();
-      const fromStorage = (localStorage.getItem(STORAGE_KEYS.GAS_URL) || "").trim();
-      return fromInput || fromStorage;
-    }
-
-    function saveGasUrl(url) {
-      const clean = (url || "").trim();
-      localStorage.setItem(STORAGE_KEYS.GAS_URL, clean);
-      const loginInput = document.getElementById("loginGasUrl");
-      const appInput = document.getElementById("appGasUrl");
-      if (loginInput && loginInput.value !== clean) loginInput.value = clean;
-      if (appInput && appInput.value !== clean) appInput.value = clean;
-    }
-
-    async function postToGas(payload) {
-      const url = getGasUrl();
-      if (!url) {
-        throw new Error("Configura primero la URL de implementación de Google Apps Script.");
-      }
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) {
-        throw new Error(`Error HTTP ${response.status} al contactar Google Apps Script.`);
-      }
-      return await response.json();
-    }
-
-    function populateAreaFilter() {
-      const select = document.getElementById("areaFilterSelect");
-      select.innerHTML = `<option value="TODAS">Todas las Áreas (Consolidado)</option>`;
-      OFFICIAL_AREAS.forEach(area => {
-        const opt = document.createElement("option");
-        opt.value = area;
-        opt.textContent = area;
-        select.appendChild(opt);
-      });
-    }
-
-    async function handleLoginSubmit(event) {
-      event.preventDefault();
-      const errorBox = document.getElementById("loginErrorBox");
-      const btn = document.getElementById("loginBtn");
-      const btnText = document.getElementById("loginBtnText");
-
-      errorBox.classList.add("hidden");
-      errorBox.textContent = "";
-
-      const usuario = document.getElementById("loginUser").value.trim();
-      const password = document.getElementById("loginPassword").value;
-
-      btn.disabled = true;
-      btnText.textContent = "Verificando acceso...";
-
-      try {
-        const res = await postToGas({
-          action: "login",
-          usuario: usuario,
-          password: password
-        });
-
-        if (!res.ok) {
-          throw new Error(res.error || "Credenciales inválidas.");
-        }
-
-        const hasDashboardAccess = String(res.rol || "").toLowerCase() === "dashboard" || Boolean(res.accesoKpi);
-        if (!hasDashboardAccess) {
-          throw new Error("Acceso denegado: tu usuario no tiene rol 'dashboard' ni permiso 'AccesoKPI = SI'.");
-        }
-
-        const sessionData = {
-          token: res.token,
-          usuario: res.usuario,
-          rol: res.rol,
-          areaAsignada: res.areaAsignada,
-          accesoKpi: Boolean(res.accesoKpi),
-          expiraEn: res.expiraEn
-        };
-
-        sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
-        currentSession = sessionData;
-        enterDashboardView();
-        await fetchDashboardData(false);
-        showToast(`Sesión iniciada como ${sessionData.usuario}`);
-      } catch (err) {
-        errorBox.textContent = err.message;
-        errorBox.classList.remove("hidden");
-      } finally {
-        btn.disabled = false;
-        btnText.textContent = "Ingresar al Dashboard";
-      }
-    }
-
-    function logout() {
-      if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-      }
-      sessionStorage.removeItem(STORAGE_KEYS.SESSION);
-      currentSession = null;
-      document.getElementById("loginPassword").value = "";
-      document.getElementById("dashboardView").classList.add("hidden");
-      document.getElementById("loginView").classList.remove("hidden");
-      showToast("Sesión cerrada");
-    }
-
-    function enterDashboardView() {
-      document.getElementById("loginView").classList.add("hidden");
-      document.getElementById("dashboardView").classList.remove("hidden");
-      document.getElementById("dashUserBadge").textContent = `Usuario: ${currentSession.usuario}`;
-      populateAreaFilter();
-    }
-
-    function toggleAutoRefresh(enabled) {
-      if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-      }
-      if (enabled) {
-        autoRefreshTimer = setInterval(() => {
-          fetchDashboardData(true);
-        }, 30000);
-        showToast("Auto-actualización cada 30s activada");
-      } else {
-        showToast("Auto-actualización desactivada");
-      }
-    }
-
-    async function fetchDashboardData(silent = false) {
-      if (!currentSession || !currentSession.token) return;
-
-      const icon = document.getElementById("refreshIcon");
-      if (icon) icon.classList.add("animate-spin");
-
-      try {
-        const res = await postToGas({
-          action: "obtener_dashboard",
-          token: currentSession.token
-        });
-
-        if (!res.ok) {
-          throw new Error(res.error || "No se pudieron cargar los datos del dashboard.");
-        }
-
-        allRecords = Array.isArray(res.registros) ? res.registros.map(normalizeRecord) : [];
-        document.getElementById("lastSyncBadge").textContent = `Última sync: ${new Date().toLocaleTimeString()}`;
-        applyFiltersAndRender();
-
-        if (!silent) {
-          showToast(`Datos actualizados (${allRecords.length} registros)`);
-        }
-      } catch (err) {
-        if (!silent) showToast(err.message, true);
-      } finally {
-        if (icon) icon.classList.remove("animate-spin");
-      }
-    }
-
-    function normalizeRecord(raw) {
-      const ejeA = Number(raw.EjeA ?? raw.ejeA ?? 0);
-      const ejeB = Number(raw.EjeB ?? raw.ejeB ?? 0);
-      const categoriaRaw = String(raw.Categoria ?? raw.categoria ?? "").trim();
-      const categoria = categoriaRaw || inferCategory(ejeA, ejeB);
-
-      return {
-        id: String(raw.ID ?? raw.id ?? ""),
-        fechaHora: String(raw.FechaHora ?? raw.fechaHora ?? ""),
-        usuario: String(raw.Usuario ?? raw.usuario ?? ""),
-        area: String(raw.Area ?? raw.area ?? "Sin Área").trim(),
-        evaluador: String(raw.Evaluador ?? raw.evaluador ?? "").trim(),
-        puesto: String(raw.Puesto ?? raw.puesto ?? "").trim(),
-        ejeA: isNaN(ejeA) ? 0 : ejeA,
-        ejeB: isNaN(ejeB) ? 0 : ejeB,
-        categoria: categoria
-      };
-    }
-
-    function inferCategory(ejeA, ejeB) {
-      const highA = ejeA >= 3.5;
-      const highB = ejeB >= 3.5;
-      if (highA && highB) return "1. Crítico Estratégico";
-      if (!highA && highB) return "2. Crítico Operativo / Cuello de Botella";
-      if (highA && !highB) return "3. Puesto Clave de Gestión";
-      return "4. Puesto Estándar / Soporte";
-    }
-
-    function applyFiltersAndRender() {
-      const selectedArea = document.getElementById("areaFilterSelect").value;
-      const searchTerm = document.getElementById("searchRoleInput").value.trim().toLowerCase();
-
-      filteredRecords = allRecords.filter(r => {
-        const matchArea = selectedArea === "TODAS" || r.area.toLowerCase() === selectedArea.toLowerCase();
-        const matchSearch = !searchTerm ||
-          r.puesto.toLowerCase().includes(searchTerm) ||
-          r.evaluador.toLowerCase().includes(searchTerm) ||
-          r.categoria.toLowerCase().includes(searchTerm);
-        return matchArea && matchSearch;
-      });
-
-      renderKPIs(filteredRecords);
-      renderMatrixPoints(filteredRecords);
-      renderAreaBreakdown(allRecords);
-      renderTable(filteredRecords);
-    }
-
-    function resetFilters() {
-      document.getElementById("areaFilterSelect").value = "TODAS";
-      document.getElementById("searchRoleInput").value = "";
-      applyFiltersAndRender();
-    }
-
-    function renderKPIs(records) {
-      const total = records.length;
-      const estrategicos = records.filter(r => r.ejeA >= 3.5 && r.ejeB >= 3.5).length;
-      const operativos = records.filter(r => r.ejeA < 3.5 && r.ejeB >= 3.5).length;
-
-      const avgA = total > 0 ? records.reduce((acc, r) => acc + r.ejeA, 0) / total : 0;
-      const avgB = total > 0 ? records.reduce((acc, r) => acc + r.ejeB, 0) / total : 0;
-
-      const pctEst = total > 0 ? ((estrategicos / total) * 100).toFixed(1) : "0.0";
-      const pctOp = total > 0 ? ((operativos / total) * 100).toFixed(1) : "0.0";
-
-      document.getElementById("kpiTotal").textContent = total;
-      document.getElementById("kpiEstrategicos").textContent = estrategicos;
-      document.getElementById("kpiEstrategicosPct").textContent = `${pctEst}% del total`;
-      document.getElementById("kpiOperativos").textContent = operativos;
-      document.getElementById("kpiOperativosPct").textContent = `${pctOp}% del total`;
-      document.getElementById("kpiAvgEjeA").textContent = avgA.toFixed(2);
-      document.getElementById("kpiAvgEjeB").textContent = avgB.toFixed(2);
-    }
-
-    function renderMatrixPoints(records) {
-      const container = document.getElementById("dashPlotPoints");
-      if (!records.length) {
-        container.innerHTML = "";
-        document.getElementById("selectedPointCard").textContent = "No hay puestos en el filtro actual para graficar.";
-        return;
-      }
-
-      container.innerHTML = records.map((r, idx) => {
-        const clampedA = Math.min(5, Math.max(1, r.ejeA));
-        const clampedB = Math.min(5, Math.max(1, r.ejeB));
-        const x = 60 + ((clampedB - 1.0) / 4.0) * 330;
-        const y = 300 - ((clampedA - 1.0) / 4.0) * 280;
-
-        const highA = clampedA >= 3.5;
-        const highB = clampedB >= 3.5;
-        let fill = "#0f233c";
-        if (highA && highB) fill = "#be123c";
-        else if (!highA && highB) fill = "#d97706";
-        else if (highA && !highB) fill = "#1d4ed8";
-
-        return `
-          <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6.5" fill="${fill}" stroke="#ffffff" stroke-width="2"
-            class="cursor-pointer transition-transform hover:scale-125"
-            onmouseenter="inspectPoint(${idx})" onclick="inspectPoint(${idx})">
-            <title>${escapeHtml(r.puesto)} (${r.area}) - Eje A: ${r.ejeA.toFixed(2)}, Eje B: ${r.ejeB.toFixed(2)}</title>
-          </circle>
-        `;
-      }).join("");
-    }
-
-    function inspectPoint(index) {
-      const r = filteredRecords[index];
-      if (!r) return;
-      document.getElementById("selectedPointCard").innerHTML = `
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <span class="font-extrabold text-slate-900">${escapeHtml(r.puesto)}</span>
-            <span class="text-slate-500">• ${escapeHtml(r.area)}</span>
-          </div>
-          <span class="font-bold text-navy-900">Eje A: ${r.ejeA.toFixed(2)} | Eje B: ${r.ejeB.toFixed(2)}</span>
-        </div>
-        <div class="mt-1 text-slate-600">${escapeHtml(r.categoria)} — Evaluado por ${escapeHtml(r.evaluador)}</div>
-      `;
-    }
-
-    function renderAreaBreakdown(records) {
-      const container = document.getElementById("areaBreakdownContainer");
-      container.innerHTML = OFFICIAL_AREAS.map(area => {
-        const areaRows = records.filter(r => r.area.toLowerCase() === area.toLowerCase());
-        const count = areaRows.length;
-        const critEst = areaRows.filter(r => r.ejeA >= 3.5 && r.ejeB >= 3.5).length;
-        const critOp = areaRows.filter(r => r.ejeA < 3.5 && r.ejeB >= 3.5).length;
-        const avgA = count > 0 ? (areaRows.reduce((s, x) => s + x.ejeA, 0) / count).toFixed(2) : "-";
-        const avgB = count > 0 ? (areaRows.reduce((s, x) => s + x.ejeB, 0) / count).toFixed(2) : "-";
-
-        return `
-          <div class="p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <div class="font-bold text-slate-900 text-sm">${escapeHtml(area)}</div>
-              <div class="text-xs text-slate-500 mt-0.5">
-                Prom. Valor (Eje A): <strong class="text-slate-700">${avgA}</strong> • Prom. Riesgo (Eje B): <strong class="text-slate-700">${avgB}</strong>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 shrink-0 text-xs font-bold">
-              <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800">${count} puestos</span>
-              <span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800">${critEst} est.</span>
-              <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800">${critOp} op.</span>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function getCategoryBadge(r) {
-      if (r.ejeA >= 3.5 && r.ejeB >= 3.5) return "bg-rose-100 text-rose-800 border border-rose-200";
-      if (r.ejeA < 3.5 && r.ejeB >= 3.5) return "bg-amber-100 text-amber-800 border border-amber-200";
-      if (r.ejeA >= 3.5 && r.ejeB < 3.5) return "bg-blue-100 text-blue-800 border border-blue-200";
-      return "bg-slate-200 text-slate-800 border border-slate-300";
-    }
-
-    function renderTable(records) {
-      const tbody = document.getElementById("dashboardTableBody");
-      document.getElementById("tableCountBadge").textContent = records.length;
-
-      if (!records.length) {
-        tbody.innerHTML = `
+  <!-- TABLA DETALLADA -->
+  <div class="card">
+    <h2>Detalle Consolidado de Evaluaciones (<span id="tablaCount">0</span>)</h2>
+    <div style="overflow-x:auto;max-height:460px;">
+      <table>
+        <thead>
           <tr>
-            <td colspan="7" class="py-10 px-4 text-center text-slate-400 text-sm">
-              No se encontraron evaluaciones con los filtros seleccionados.
-            </td>
+            <th>Fecha</th>
+            <th>Área</th>
+            <th>Jefe Evaluador</th>
+            <th>Persona Evaluada</th>
+            <th>Puesto Evaluado</th>
+            <th>Eje A</th>
+            <th>Eje B</th>
+            <th>Categoría</th>
           </tr>
-        `;
-        return;
-      }
+        </thead>
+        <tbody id="tablaDetalleBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-      tbody.innerHTML = records.map(r => `
-        <tr class="hover:bg-slate-50/80 transition">
-          <td class="py-3.5 px-4 font-bold text-slate-900">${escapeHtml(r.puesto)}</td>
-          <td class="py-3.5 px-4 text-xs font-semibold text-slate-700">${escapeHtml(r.area)}</td>
-          <td class="py-3.5 px-4 text-xs text-slate-600">${escapeHtml(r.evaluador)}</td>
-          <td class="py-3.5 px-3 text-center font-bold text-slate-800">${r.ejeA.toFixed(2)}</td>
-          <td class="py-3.5 px-3 text-center font-bold text-slate-800">${r.ejeB.toFixed(2)}</td>
-          <td class="py-3.5 px-4">
-            <span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold ${getCategoryBadge(r)}">
-              ${escapeHtml(r.categoria)}
-            </span>
-          </td>
-          <td class="py-3.5 px-4 text-xs text-slate-500">${escapeHtml(r.fechaHora)}</td>
-        </tr>
-      `).join("");
-    }
+<script>
+  const AREAS_OFICIALES = [
+    "Recursos Humanos y SSOMA",
+    "Finanzas",
+    "Logística",
+    "Tecnología de la Información",
+    "Packing",
+    "GOA Chepén y Piura",
+    "GOA Chincha",
+    "Comercial",
+    "Sourcing"
+  ];
 
-    function exportFilteredCSV() {
-      if (!filteredRecords.length) {
-        showToast("No hay registros filtrados para exportar.", true);
-        return;
-      }
+  let sessionData = null;
+  let allRegistros = [];
+  let filteredRegistros = [];
 
-      const headers = ["ID", "FechaHora", "Usuario", "Area", "Evaluador", "Puesto", "EjeA", "EjeB", "Categoria"];
-      const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const lines = [
-        headers.map(esc).join(","),
-        ...filteredRecords.map(r => [
-          r.id, r.fechaHora, r.usuario, r.area, r.evaluador, r.puesto,
-          r.ejeA.toFixed(2), r.ejeB.toFixed(2), r.categoria
-        ].map(esc).join(","))
-      ];
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedUrl = localStorage.getItem("HAY_API_URL") || "";
+    document.getElementById("apiUrlInput").value = savedUrl;
 
-      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const dateStr = new Date().toISOString().slice(0, 10);
-
-      link.href = url;
-      link.download = `Dashboard_Criticidad_Puestos_${dateStr}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      showToast("CSV consolidado descargado");
-    }
-
-    function escapeHtml(str) {
-      const div = document.createElement("div");
-      div.textContent = String(str ?? "");
-      return div.innerHTML;
-    }
-
-    let toastTimeout;
-    function showToast(message, isError = false) {
-      const toast = document.getElementById("toast");
-      const box = document.getElementById("toastBox");
-      const icon = document.getElementById("toastIcon");
-      document.getElementById("toastMessage").textContent = message;
-
-      if (isError) {
-        box.className = "bg-rose-950 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium border border-rose-700";
-        icon.className = "w-5 h-5 text-rose-300 shrink-0";
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
-      } else {
-        box.className = "bg-navy-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium border border-slate-700";
-        icon.className = "w-5 h-5 text-emerald-400 shrink-0";
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
-      }
-
-      toast.classList.remove("translate-y-20", "opacity-0");
-      toast.classList.add("translate-y-0", "opacity-100");
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toast.classList.add("translate-y-20", "opacity-0");
-        toast.classList.remove("translate-y-0", "opacity-100");
-      }, 3200);
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const savedUrl = localStorage.getItem(STORAGE_KEYS.GAS_URL) || "";
-      document.getElementById("loginGasUrl").value = savedUrl;
-      document.getElementById("appGasUrl").value = savedUrl;
-
-      const rawSession = sessionStorage.getItem(STORAGE_KEYS.SESSION);
-      if (rawSession) {
-        try {
-          const parsed = JSON.parse(rawSession);
-          if (parsed && parsed.token && (!parsed.expiraEn || Number(parsed.expiraEn) > Date.now())) {
-            currentSession = parsed;
-            enterDashboardView();
-            fetchDashboardData(true);
-          }
-        } catch (e) {
-          sessionStorage.removeItem(STORAGE_KEYS.SESSION);
-        }
-      }
+    const selArea = document.getElementById("filtroArea");
+    AREAS_OFICIALES.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a;
+      opt.textContent = a;
+      selArea.appendChild(opt);
     });
-  </script>
+  });
+
+  function showAlert(elId, msg) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  async function apiPost(payload) {
+    const url = localStorage.getItem("HAY_API_URL");
+    const res = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+
+  async function handleLogin() {
+    document.getElementById("loginAlert").style.display = "none";
+    const url = document.getElementById("apiUrlInput").value.trim();
+    const usuario = document.getElementById("loginUser").value.trim();
+    const password = document.getElementById("loginPass").value;
+
+    if (!url || !usuario || !password) {
+      showAlert("loginAlert", "Completa la URL del Web App, el usuario y la contraseña.");
+      return;
+    }
+
+    localStorage.setItem("HAY_API_URL", url);
+    const btn = document.getElementById("btnLogin");
+    btn.disabled = true;
+    btn.textContent = "Ingresando...";
+
+    try {
+      const resp = await apiPost({ action: "login", usuario, password });
+      if (!resp.ok) {
+        showAlert("loginAlert", resp.error || "Credenciales inválidas.");
+        return;
+      }
+
+      if (resp.rol !== "dashboard" && !resp.accesoKpi) {
+        showAlert("loginAlert", "Este usuario no tiene permisos para acceder al Dashboard de KPIs.");
+        return;
+      }
+
+      sessionData = resp;
+      document.getElementById("loginView").classList.add("hidden");
+      document.getElementById("appView").classList.remove("hidden");
+      document.getElementById("headerUserBox").classList.remove("hidden");
+
+      const nombreDisplay = (resp.nombreJefe && resp.nombreJefe !== resp.usuario)
+        ? `${resp.nombreJefe} (${resp.usuario})`
+        : resp.usuario;
+      const cargoScope = resp.puestoJefe
+        ? `${resp.puestoJefe} | Alcance: ${resp.areaAsignada || "TODAS"}`
+        : `Rol: ${resp.rol.toUpperCase()} | Alcance: ${resp.areaAsignada || "TODAS"}`;
+
+      document.getElementById("hdrUser").textContent = nombreDisplay;
+      document.getElementById("hdrScope").textContent = cargoScope;
+
+      await cargarDatosDashboard();
+    } catch (err) {
+      showAlert("loginAlert", "Error de conexión: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Ingresar al Dashboard";
+    }
+  }
+
+  async function cargarDatosDashboard() {
+    document.getElementById("appAlert").style.display = "none";
+    try {
+      const resp = await apiPost({ action: "obtener_dashboard", token: sessionData.token });
+      if (!resp.ok) {
+        showAlert("appAlert", resp.error || "No se pudieron cargar los datos.");
+        return;
+      }
+
+      allRegistros = resp.registros || [];
+
+      // Si el usuario tiene un área específica distinta de TODAS, restringir vista
+      const areaUser = (sessionData.areaAsignada || "TODAS").trim();
+      if (areaUser.toUpperCase() !== "TODAS") {
+        allRegistros = allRegistros.filter(r => String(r.Area).trim().toLowerCase() === areaUser.toLowerCase());
+        document.getElementById("filtroArea").value = areaUser;
+        document.getElementById("filtroArea").disabled = true;
+      }
+
+      aplicarFiltros();
+    } catch (err) {
+      showAlert("appAlert", "Error al actualizar dashboard: " + err.message);
+    }
+  }
+
+  function aplicarFiltros() {
+    const fArea = document.getElementById("filtroArea").value;
+    const fCat = document.getElementById("filtroCategoria").value;
+    const fText = document.getElementById("filtroBuscar").value.trim().toLowerCase();
+
+    filteredRegistros = allRegistros.filter(r => {
+      if (fArea !== "TODAS" && String(r.Area).trim() !== fArea) return false;
+      if (fCat !== "TODAS" && String(r.Categoria).trim() !== fCat) return false;
+      if (fText) {
+        const blob = `${r.PersonaEvaluada || ""} ${r.Puesto || ""} ${r.Evaluador || ""} ${r.Area || ""}`.toLowerCase();
+        if (!blob.includes(fText)) return false;
+      }
+      return true;
+    });
+
+    renderKPIs();
+    renderMatrizPuntos();
+    renderDesgloseAreas();
+    renderTablaDetalle();
+  }
+
+  function renderKPIs() {
+    const total = filteredRegistros.length;
+    const crit = filteredRegistros.filter(r => r.Categoria === "Puesto Crítico").length;
+    const est = filteredRegistros.filter(r => r.Categoria === "Puesto Estratégico").length;
+    const vuln = filteredRegistros.filter(r => r.Categoria === "Puesto Vulnerable").length;
+    const oper = filteredRegistros.filter(r => r.Categoria === "Puesto Operativo Estándar").length;
+    const areasUnicas = new Set(filteredRegistros.map(r => r.Area)).size;
+
+    const pct = n => total ? ((n / total) * 100).toFixed(1) + "%" : "0%";
+
+    document.getElementById("kpiTotal").textContent = total;
+    document.getElementById("kpiAreasCount").textContent = `${areasUnicas} área(s) con registros`;
+    document.getElementById("kpiCriticos").textContent = crit;
+    document.getElementById("kpiCriticosPct").textContent = `${pct(crit)} del total`;
+    document.getElementById("kpiEstrategicos").textContent = est;
+    document.getElementById("kpiEstrategicosPct").textContent = `${pct(est)} del total`;
+    document.getElementById("kpiVulnerables").textContent = vuln;
+    document.getElementById("kpiVulnerablesPct").textContent = `${pct(vuln)} del total`;
+    document.getElementById("kpiOperativos").textContent = oper;
+    document.getElementById("kpiOperativosPct").textContent = `${pct(oper)} del total`;
+  }
+
+  function renderMatrizPuntos() {
+    const group = document.getElementById("puntosGroup");
+    group.innerHTML = "";
+
+    filteredRegistros.forEach(r => {
+      const ejeA = Number(r.EjeA) || 1;
+      const ejeB = Number(r.EjeB) || 1;
+      const cx = 50 + ((ejeB - 1) / 4) * 280;
+      const cy = 300 - ((ejeA - 1) / 4) * 280;
+
+      let color = "#166534";
+      if (r.Categoria === "Puesto Crítico") color = "#dc2626";
+      else if (r.Categoria === "Puesto Estratégico") color = "#d97706";
+      else if (r.Categoria === "Puesto Vulnerable") color = "#2563eb";
+
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", cx);
+      circle.setAttribute("cy", cy);
+      circle.setAttribute("r", "6");
+      circle.setAttribute("fill", color);
+      circle.setAttribute("stroke", "#ffffff");
+      circle.setAttribute("stroke-width", "1.5");
+
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = `${r.PersonaEvaluada || ""} - ${r.Puesto} (${r.Area}) | A:${ejeA.toFixed(2)}, B:${ejeB.toFixed(2)}`;
+      circle.appendChild(title);
+      group.appendChild(circle);
+    });
+  }
+
+  function renderDesgloseAreas() {
+    const cont = document.getElementById("desgloseAreas");
+    cont.innerHTML = "";
+
+    AREAS_OFICIALES.forEach(area => {
+      const items = allRegistros.filter(r => String(r.Area).trim() === area);
+      const total = items.length;
+      const crit = items.filter(r => r.Categoria === "Puesto Crítico").length;
+      const est = items.filter(r => r.Categoria === "Puesto Estratégico").length;
+      const vuln = items.filter(r => r.Categoria === "Puesto Vulnerable").length;
+      const oper = items.filter(r => r.Categoria === "Puesto Operativo Estándar").length;
+
+      const w = n => total ? (n / total) * 100 : 0;
+
+      const row = document.createElement("div");
+      row.className = "area-row";
+      row.innerHTML = `
+        <div class="area-row-header">
+          <span>${area}</span>
+          <span>${total} eval. (${crit} críticos)</span>
+        </div>
+        <div class="progress-bar">
+          <div style="width:${w(crit)}%;background:#dc2626;" title="Críticos: ${crit}"></div>
+          <div style="width:${w(est)}%;background:#d97706;" title="Estratégicos: ${est}"></div>
+          <div style="width:${w(vuln)}%;background:#2563eb;" title="Vulnerables: ${vuln}"></div>
+          <div style="width:${w(oper)}%;background:#059669;" title="Operativos: ${oper}"></div>
+        </div>
+      `;
+      cont.appendChild(row);
+    });
+  }
+
+  function renderTablaDetalle() {
+    document.getElementById("tablaCount").textContent = filteredRegistros.length;
+    const tbody = document.getElementById("tablaDetalleBody");
+
+    if (filteredRegistros.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#64748b;">No hay registros que coincidan con los filtros seleccionados.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filteredRegistros.map(r => {
+      let badgeClass = "b-operativo";
+      if (r.Categoria === "Puesto Crítico") badgeClass = "b-critico";
+      else if (r.Categoria === "Puesto Estratégico") badgeClass = "b-estrategico";
+      else if (r.Categoria === "Puesto Vulnerable") badgeClass = "b-vulnerable";
+
+      return `
+        <tr>
+          <td>${r.FechaHora || ""}</td>
+          <td>${r.Area || ""}</td>
+          <td>${r.Evaluador || ""}</td>
+          <td><strong>${r.PersonaEvaluada || "-"}</strong></td>
+          <td>${r.Puesto || ""}</td>
+          <td>${Number(r.EjeA || 0).toFixed(2)}</td>
+          <td>${Number(r.EjeB || 0).toFixed(2)}</td>
+          <td><span class="badge ${badgeClass}">${r.Categoria || ""}</span></td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function exportarCSVFiltrado() {
+    if (filteredRegistros.length === 0) return;
+    const headers = ["ID","FechaHora","Usuario","Area","Evaluador","PuestoEvaluador","ID_Persona","PersonaEvaluada","Puesto","Impacto","Complejidad","Escasez","Reemplazo","Fuga","EjeA","EjeB","Categoria"];
+    const rows = filteredRegistros.map(r => headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","));
+    const csv = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "Consolidado_Puestos_Criticos_KPI.csv";
+    a.click();
+  }
+
+  function logout() {
+    sessionData = null;
+    allRegistros = [];
+    filteredRegistros = [];
+    document.getElementById("appView").classList.add("hidden");
+    document.getElementById("headerUserBox").classList.add("hidden");
+    document.getElementById("loginView").classList.remove("hidden");
+    document.getElementById("loginPass").value = "";
+  }
+</script>
 </body>
 </html>
